@@ -53,7 +53,7 @@ _Currently under definition — Godot project and Symfony backend to be structur
 
 ---
 
-##🚀 How to Use
+## 🚀 How to Use
 ```bash
 # Run Godot game
 1. Open godot-game/project.godot in Godot 4.x
@@ -67,7 +67,7 @@ _Currently under definition — Godot project and Symfony backend to be structur
 ```
 ---
 
-##📜 License
+## 📜 License
 
 This project is under the MIT License.
 Feel free to modify, share, and build on it!
