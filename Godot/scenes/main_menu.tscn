@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://cptpukuybynjh"]
+
+[ext_resource type="Script" uid="uid://dqdbpn6sbjjsp" path="res://scripts/main_menu.gd" id="1_bqqt6"]
+[ext_resource type="FontFile" uid="uid://crft7xjpq21ha" path="res://assets/fonts/PixelOperator8.ttf" id="1_ekxnf"]
+[ext_resource type="FontFile" uid="uid://dj0giqk7mfwmq" path="res://assets/fonts/PixelOperator8-Bold.ttf" id="2_bqqt6"]
+
+[node name="main_menu" type="Control" unique_id=989359725]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_bqqt6")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1115305886]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=486695304]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=475865809]
+layout_mode = 2
+theme_override_constants/separation = 60
+
+[node name="Separator" type="Control" parent="MarginContainer/VBoxContainer" unique_id=1789245990]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer" unique_id=2114663985]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 6
+theme_override_constants/shadow_offset_y = 5
+theme_override_constants/outline_size = 24
+theme_override_fonts/font = ExtResource("1_ekxnf")
+theme_override_font_sizes/font_size = 64
+text = "Fantasy Adventure"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1775402801]
+layout_mode = 2
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1950607090]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Separator1" type="Control" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=1245609814]
+layout_mode = 2
+
+[node name="PlaySoloButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=1495015285]
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_bqqt6")
+theme_override_font_sizes/font_size = 16
+text = "Play Solo "
+
+[node name="Separator2" type="Control" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=11828202]
+layout_mode = 2
+
+[node name="PlayMiniGamesButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=308361039]
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_bqqt6")
+theme_override_font_sizes/font_size = 16
+text = "Play Mini Games"
+
+[node name="Separator3" type="Control" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=1944293764]
+layout_mode = 2
+
+[node name="SettingsButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=1858949939]
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_bqqt6")
+text = "Settings"
+
+[node name="Separator4" type="Control" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=499292949]
+layout_mode = 2
+
+[node name="QuitButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=433540101]
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_bqqt6")
+text = "Quit"

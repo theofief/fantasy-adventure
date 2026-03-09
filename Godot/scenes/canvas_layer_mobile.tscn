@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dppqw3s7fg481"]
+
+[ext_resource type="Script" uid="uid://c8yiveu8fhnx1" path="res://scripts/mobile_ui.gd" id="1_yr7m2"]
+[ext_resource type="PackedScene" uid="uid://bq2sqb1u1l5ve" path="res://addons/virtual_joystick/test/test.tscn" id="2_1r18x"]
+
+[node name="CanvasLayerMobile" type="CanvasLayer" unique_id=89084197]
+follow_viewport_enabled = true
+script = ExtResource("1_yr7m2")
+
+[node name="Test" parent="." unique_id=1646590447 instance=ExtResource("2_1r18x")]

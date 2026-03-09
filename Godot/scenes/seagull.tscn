@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://bx8ycb82j0hw2"]
+
+[ext_resource type="Script" uid="uid://ylj03hhq6mbb" path="res://scripts/seagull.gd" id="1_8xdhb"]
+[ext_resource type="Texture2D" uid="uid://bsf7dd2y3l4p7" path="res://assets/sprites/seagull.png" id="1_htak3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_htak3"]
+atlas = ExtResource("1_htak3")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8xdhb"]
+atlas = ExtResource("1_htak3")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_or5sd"]
+atlas = ExtResource("1_htak3")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_su3vp"]
+atlas = ExtResource("1_htak3")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p8mmu"]
+atlas = ExtResource("1_htak3")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vo4ly"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_htak3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8xdhb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_or5sd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_su3vp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p8mmu")
+}],
+"loop": true,
+"name": &"default",
+"speed": 10.0
+}]
+
+[node name="Seagull" type="Node2D" unique_id=1114235066]
+script = ExtResource("1_8xdhb")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=166249102]
+position = Vector2(0, -5)
+sprite_frames = SubResource("SpriteFrames_vo4ly")
+autoplay = "default"
+frame_progress = 0.15299568
