@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://cgqpg3bl07ghk" path="res://scenes/platformer/platform.tscn" id="3_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://cpsebg2lxc8ax" path="res://scenes/platformer/coin.tscn" id="4_lbhrr"]
 [ext_resource type="Texture2D" uid="uid://blmm2qqfy1nf2" path="res://assets/tiles/platformer/bg/purple_L3.png" id="4_t3ei5"]
-[ext_resource type="PackedScene" uid="uid://dhq0pa6na6p7k" path="res://scenes/platformer/killzone.tscn" id="5_iywne"]
+[ext_resource type="Script" uid="uid://cwjj3n4c6aw0s" path="res://scripts/killzone.gd" id="5_t3ei5"]
 [ext_resource type="PackedScene" uid="uid://bk7xgxr7d3psf" path="res://scenes/platformer/platform_blue.tscn" id="6_u5sy4"]
 [ext_resource type="PackedScene" uid="uid://gyrct7kd4r4u" path="res://scenes/pause_menu.tscn" id="7_fefkq"]
 [ext_resource type="PackedScene" uid="uid://dppqw3s7fg481" path="res://scenes/canvas_layer_mobile.tscn" id="8_3m3f4"]
@@ -531,6 +531,9 @@ sources/0 = SubResource("TileSetAtlasSource_yqjtg")
 sources/1 = SubResource("TileSetAtlasSource_d1wwc")
 sources/2 = SubResource("TileSetAtlasSource_t3ei5")
 
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_avnoi"]
+distance = -53.0
+
 [sub_resource type="Animation" id="Animation_lbhrr"]
 length = 0.001
 tracks/0/type = "value"
@@ -673,12 +676,20 @@ texture = ExtResource("4_t3ei5")
 [node name="Sprite2D" type="Sprite2D" parent="Parallax2D" unique_id=533441569]
 texture = ExtResource("3_d1wwc")
 
+[node name="Area2D" type="Area2D" parent="." unique_id=104736498]
+script = ExtResource("5_t3ei5")
+
+[node name="Timer2" type="Timer" parent="Area2D" unique_id=1545759097]
+wait_time = 0.6
+one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1152866890]
+y_sort_enabled = true
+position = Vector2(53, 100)
+shape = SubResource("WorldBoundaryShape2D_avnoi")
+
 [node name="player" parent="." unique_id=1518828522 instance=ExtResource("2_uxkte")]
 position = Vector2(8, 25)
-
-[node name="Killzone" parent="." unique_id=2060717604 instance=ExtResource("5_iywne")]
-position = Vector2(10, 13)
-script = null
 
 [node name="Coins" type="Node" parent="." unique_id=1878540103]
 
@@ -747,6 +758,8 @@ position = Vector2(2169, -136)
 [node name="CanvasLayer2" type="CanvasLayer" parent="." unique_id=934979535]
 
 [node name="PauseMenu" parent="CanvasLayer2" unique_id=1923019937 instance=ExtResource("7_fefkq")]
+offset_top = 13.0
+offset_bottom = 13.0
 
 [node name="CanvasLayerMobile" parent="." unique_id=89084197 instance=ExtResource("8_3m3f4")]
 script = null
