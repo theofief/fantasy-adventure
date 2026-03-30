@@ -10,7 +10,6 @@
 [ext_resource type="Texture2D" uid="uid://xu34utq75r5k" path="res://assets/tiles/trees/Medium_Spruce_Tree.png" id="5_1kice"]
 [ext_resource type="Texture2D" uid="uid://c8qbihl8tfieq" path="res://assets/tiles/trees/Small_Birch_Tree.png" id="6_5newe"]
 [ext_resource type="Texture2D" uid="uid://btfr1eti6jcpw" path="res://assets/tiles/trees/Small_Fruit_Tree.png" id="7_37s47"]
-[ext_resource type="PackedScene" uid="uid://dppqw3s7fg481" path="res://scenes/canvas_layer_mobile.tscn" id="7_u5sy4"]
 [ext_resource type="Texture2D" uid="uid://cgnbt4h2h0uxv" path="res://assets/tiles/trees/Small_Oak_Tree.png" id="8_bt5mj"]
 [ext_resource type="Texture2D" uid="uid://dq348kbo5m1lf" path="res://assets/tiles/trees/Small_Spruce_Tree.png" id="9_e1j6l"]
 [ext_resource type="Texture2D" uid="uid://bybyqdhpxpfy4" path="res://assets/tiles/platformer/caveEntry.png" id="10_1kice"]
@@ -1237,6 +1236,3 @@ tile_set = SubResource("TileSet_lbhrr")
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1864383929]
 
 [node name="PauseMenu" parent="CanvasLayer" unique_id=1923019937 instance=ExtResource("3_lnu2h")]
-
-[node name="CanvasLayerMobile" parent="." unique_id=89084197 instance=ExtResource("7_u5sy4")]
-script = null
