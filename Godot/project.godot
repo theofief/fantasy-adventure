@@ -17,6 +17,8 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 [autoload]
 
 DialogueManager="*uid://c3rodes2l3gxb"
+GlobalCoins="*uid://dodnsvwjj5tuy"
+GlobalHp="*uid://yj08d85ibl8m"
 
 [display]
 
@@ -27,7 +29,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/virtual_joystick/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg")
 
 [input]
 
