@@ -67,7 +67,7 @@ func _physics_process(delta: float) -> void:
 
 	velocity = direction * current_speed
 	move_and_slide()
-
+	# z_index = roundi(global_position.y)
 	update_animation(direction)
 
 

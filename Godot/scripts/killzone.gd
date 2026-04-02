@@ -7,7 +7,7 @@ func _ready():
 
 func _on_body_entered(body: Node) -> void:
 	# Vérifie si c'est bien le joueur
-	if body is CharacterBody2D:
+	if body.name == "player" or (body.get_parent() and body.get_parent().name == "player"):
 		print("Player touched KillZone! -1 HP")
 
 		GlobalHp.remove_hp(1)

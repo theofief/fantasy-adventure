@@ -1,5 +1,6 @@
 [gd_scene format=4 uid="uid://yicge48108e0"]
 
+[ext_resource type="Script" uid="uid://bje34botywxx6" path="res://scripts/platformer.gd" id="1_3g41c"]
 [ext_resource type="Texture2D" uid="uid://dyafe7g7sw3qf" path="res://assets/tiles/platformer/world_tileset.png" id="1_uxkte"]
 [ext_resource type="Texture2D" uid="uid://sjjlvtmtnp7i" path="res://assets/tiles/platformer/bg/blue_L2.png" id="2_3m3f4"]
 [ext_resource type="PackedScene" uid="uid://dy2tk5u1jd2i1" path="res://scenes/playerPlatformer.tscn" id="2_uxkte"]
@@ -897,6 +898,7 @@ animations = [{
 size = Vector2(47, 33)
 
 [node name="Game" type="Node2D" unique_id=1872649446]
+script = ExtResource("1_3g41c")
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1196744906]
 z_index = 1

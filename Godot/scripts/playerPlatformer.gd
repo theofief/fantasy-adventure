@@ -68,3 +68,7 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 
 	move_and_slide()
+
+func disable():
+	set_physics_process(false)
+	velocity = Vector2.ZERO

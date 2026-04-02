@@ -165,6 +165,9 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v7co7"]
 size = Vector2(41, 24.5)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1akep"]
+size = Vector2(13, 11)
+
 [node name="slime_medium_blue" type="Node2D" unique_id=1518828522]
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=667108592]
@@ -186,3 +189,9 @@ frame_progress = 0.8565922
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D/DetectionArea" unique_id=702238367]
 position = Vector2(0, -12.25)
 shape = SubResource("RectangleShape2D_v7co7")
+
+[node name="HitArea" type="Area2D" parent="CharacterBody2D" unique_id=1164476234]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D/HitArea" unique_id=1627174302]
+position = Vector2(-0.5, -5.5)
+shape = SubResource("RectangleShape2D_1akep")

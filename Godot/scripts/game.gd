@@ -9,14 +9,12 @@ extends Node2D
 var timer: Timer
 
 func _ready() -> void:
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	randomize()
-
-	# Création du Timer
 	timer = Timer.new()
 	timer.one_shot = true
 	add_child(timer)
 	timer.timeout.connect(_on_timer_timeout)
-
 	start_timer()
 
 
