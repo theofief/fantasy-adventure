@@ -76,7 +76,7 @@ tracks/0/path = NodePath("ColorRect:material:shader_parameter/lod")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"handle_modes": PackedInt32Array(0, 2),
+"handle_modes": PackedInt32Array(0, 0),
 "points": PackedFloat32Array(0, -0.15, 0, 0.15, 0, 0.86100006, -0.050000004, -0.14350002, 0, 0),
 "times": PackedFloat32Array(0, 0.3)
 }
