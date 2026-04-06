@@ -27,6 +27,9 @@
 [ext_resource type="Texture2D" uid="uid://c23cu02qf1opl" path="res://assets/tiles/platformer/coin.png" id="24_sww3w"]
 [ext_resource type="Script" uid="uid://chqi3dprys3mg" path="res://scripts/map_ui.gd" id="25_qnb83"]
 [ext_resource type="Shader" uid="uid://d1o2fvmv61isf" path="res://Shaders/pause_menu.gdshader" id="26_sww3w"]
+[ext_resource type="PackedScene" uid="uid://b87dn0ljdei1f" path="res://scenes/NPCs/start_npc.tscn" id="28_sww3w"]
+[ext_resource type="Script" uid="uid://bfavmn8krcw0n" path="res://scripts/start_npc.gd" id="29_suyxu"]
+[ext_resource type="Resource" uid="uid://c7tik0s14nju0" path="res://dialogues/starter.dialogue" id="30_sgl2t"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_1kice"]
 texture = ExtResource("2_yqjtg")
@@ -1404,7 +1407,7 @@ texture = ExtResource("18_5newe")
 sources/0 = SubResource("TileSetAtlasSource_02fa5")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_37s47"]
-size = Vector2(60, 33)
+size = Vector2(66, 33)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_i64fm"]
 atlas = ExtResource("24_sww3w")
@@ -1814,6 +1817,8 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="SubViewport" type="SubViewport" parent="MapLayer/PanelContainer/HBoxContainer/VBoxContainer/SubViewportContainer" unique_id=1604489608]
+handle_input_locally = false
+render_target_update_mode = 4
 
 [node name="Camera2D" type="Camera2D" parent="MapLayer/PanelContainer/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport" unique_id=2059380357]
 
@@ -1822,6 +1827,25 @@ layout_mode = 2
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="MapLayer" unique_id=390354719]
 libraries/ = SubResource("AnimationLibrary_wljb1")
+
+[node name="StartNPC" parent="." unique_id=1288858383 instance=ExtResource("28_sww3w")]
+position = Vector2(191, 83)
+
+[node name="Area2D" type="Area2D" parent="StartNPC" unique_id=963332183]
+script = ExtResource("29_suyxu")
+dialogue_resource = ExtResource("30_sgl2t")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StartNPC/Area2D" unique_id=78507920]
+position = Vector2(0, -7.5)
+shape = SubResource("RectangleShape2D_37s47")
+
+[node name="Label" type="Label" parent="StartNPC/Area2D" unique_id=1012964365]
+y_sort_enabled = true
+offset_left = -34.0
+offset_top = -42.0
+offset_right = 35.0
+offset_bottom = -19.0
+text = "Press \"E\""
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1864383929]
 

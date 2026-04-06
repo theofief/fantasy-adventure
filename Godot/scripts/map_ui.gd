@@ -40,9 +40,13 @@ func _ready():
 	visible = false
 
 func _process(_delta):
-	# Toggle map
+	# Toggle map avec M
 	if Input.is_action_just_pressed("ui_toggle_map"):
 		toggle_map()
+	
+	# 🔥 Fermer avec ESC
+	if is_open and Input.is_action_just_pressed("ui_cancel"):
+		close_map()
 	
 	# Suivi joueur + offset
 	if is_open and player:

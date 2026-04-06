@@ -1,0 +1,17 @@
+~ start
+Nathan: [[Hi|Hello|Howdy]], welcome to the island !
+Nathan: I'm sorry but you can't stay here...
+- Why ???
+	Nathan: Because our island just became infested by slimes
+	- No worry I'm a hero, I'll help you !
+		Nathan: What ? Really ?
+		- Of course !
+			Nathan: Oh thanks a lot !
+			Nathan: I think the first thing you should do is to find the cave
+			Nathan: It's where they camed out first
+			- Let me take a look then !
+				Nathan: Thanks a lot, then see you soon I guess ! Do your best hero !!!!
+#- Second one
+#	Nathan: You picked the second one.
+#- Start again => start
+=> END

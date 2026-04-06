@@ -13,23 +13,25 @@ var is_crouching := false
 var is_jumping := false
 var sprite_base_position := Vector2.ZERO
 
+# Variable pour bloquer le mouvement
+var can_move := true
 
 func _ready() -> void:
 	sprite_base_position = sprite.position
 
-
 func _physics_process(delta: float) -> void:
+	if not can_move:
+		return  # 🔒 Si can_move = false, le joueur ne bouge pas
+
 	var direction := Vector2.ZERO
 
 	# Direction horizontale
-	direction.x = 0
 	if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_move_left"):
 		direction.x -= 1
 	if Input.is_action_pressed("ui_right") or Input.is_action_pressed("ui_move_right"):
 		direction.x += 1
 
 	# Direction verticale
-	direction.y = 0
 	if Input.is_action_pressed("ui_up") or Input.is_action_pressed("ui_move_up"):
 		direction.y -= 1
 	if Input.is_action_pressed("ui_down") or Input.is_action_pressed("ui_move_down"):
@@ -47,7 +49,6 @@ func _physics_process(delta: float) -> void:
 	# ======================
 	if Input.is_action_just_pressed("ui_shift") and not is_jumping:
 		is_crouching = !is_crouching
-
 		if is_crouching:
 			sprite.play("shift")
 		else:
@@ -67,9 +68,7 @@ func _physics_process(delta: float) -> void:
 
 	velocity = direction * current_speed
 	move_and_slide()
-	# z_index = roundi(global_position.y)
 	update_animation(direction)
-
 
 # ======================
 # SAUT VISUEL
@@ -100,7 +99,6 @@ func start_jump() -> void:
 	await tween.finished
 	is_jumping = false
 
-
 # ======================
 # ANIMATIONS
 # ======================
@@ -108,9 +106,6 @@ func update_animation(direction: Vector2) -> void:
 	if is_jumping:
 		return
 
-	# ======================
-	# MODE SHIFT
-	# ======================
 	if is_crouching:
 		if direction == Vector2.ZERO:
 			if abs(last_direction.x) > 0:
@@ -123,8 +118,6 @@ func update_animation(direction: Vector2) -> void:
 			return
 
 		# Déplacement en shift
-
-		# Priorité horizontale si diagonale
 		if abs(direction.x) > 0:
 			sprite.play("walk_shift")
 			handle_flip(direction)
@@ -136,10 +129,7 @@ func update_animation(direction: Vector2) -> void:
 			sprite.play("walk_shift_top")
 			return
 
-	# ======================
 	# IMMOBILE NORMAL
-	# ======================
-
 	if direction == Vector2.ZERO:
 		if last_direction.y > 0:
 			sprite.play("default")
@@ -149,20 +139,16 @@ func update_animation(direction: Vector2) -> void:
 			sprite.play("left_right_see")
 		return
 
-	# ======================
 	# NORMAL
-	# ======================
 	if direction.y > 0:
 		sprite.play("down_walk")
 		return
-
 	if direction.y < 0:
 		sprite.play("walk_to_top")
 		return
 
 	sprite.play("left_right_walk")
 	handle_flip(direction)
-
 
 func handle_flip(direction: Vector2) -> void:
 	if direction.x < 0:

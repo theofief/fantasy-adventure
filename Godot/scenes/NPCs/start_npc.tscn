@@ -1,0 +1,122 @@
+[gd_scene format=3 uid="uid://b87dn0ljdei1f"]
+
+[ext_resource type="Texture2D" uid="uid://blxbdt2ncpqy" path="res://assets/tiles/Cute_Fantasy/NPCs (Premade)/Lumberjack_Jack.png" id="1_ddrvt"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r4u2e"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_su2tv"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g2hy8"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bo36w"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hxow4"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fvqkr"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uj8hj"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ygp84"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dtw0n"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hrafk"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ma06d"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(256, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_aa4rk"]
+atlas = ExtResource("1_ddrvt")
+region = Rect2(320, 64, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_mwiek"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r4u2e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_su2tv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g2hy8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bo36w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hxow4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fvqkr")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uj8hj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ygp84")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dtw0n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hrafk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ma06d")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_aa4rk")
+}],
+"loop": true,
+"name": &"left_see",
+"speed": 10.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ddrvt"]
+radius = 6.0
+height = 18.0
+
+[node name="StartNPC" type="Node2D" unique_id=1288858383]
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=1034254295]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=271472870]
+position = Vector2(0, -7)
+sprite_frames = SubResource("SpriteFrames_mwiek")
+animation = &"left_see"
+autoplay = "left_see"
+frame_progress = 0.8405652
+flip_h = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D" unique_id=1533670953]
+position = Vector2(0, -9)
+shape = SubResource("CapsuleShape2D_ddrvt")
+
+[node name="Camera2D" type="Camera2D" parent="CharacterBody2D" unique_id=1422881520]
