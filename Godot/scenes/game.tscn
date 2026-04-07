@@ -1740,6 +1740,7 @@ offset_left = 1143.0
 offset_top = -810.0
 offset_right = 1212.0
 offset_bottom = -787.0
+theme_override_fonts/font = ExtResource("22_bhx41")
 text = "Press \"E\""
 
 [node name="player" parent="." unique_id=1518828522 instance=ExtResource("1_uwrxv")]
@@ -1845,6 +1846,7 @@ offset_left = -34.0
 offset_top = -42.0
 offset_right = 35.0
 offset_bottom = -19.0
+theme_override_fonts/font = ExtResource("22_bhx41")
 text = "Press \"E\""
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1864383929]

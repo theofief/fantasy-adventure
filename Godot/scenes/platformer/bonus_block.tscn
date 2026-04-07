@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://b2rtxrsleop5t"]
+
+[ext_resource type="Texture2D" uid="uid://dyafe7g7sw3qf" path="res://assets/tiles/platformer/world_tileset.png" id="1_4fw0t"]
+[ext_resource type="Script" uid="uid://8trf6f7t5lin" path="res://scripts/bonus_block.gd" id="1_b68te"]
+[ext_resource type="AudioStream" uid="uid://mnm1cky7piae" path="res://assets/sounds/coin.wav" id="3_n17ce"]
+[ext_resource type="FontFile" uid="uid://crft7xjpq21ha" path="res://assets/fonts/PixelOperator8.ttf" id="4_dvmrw"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b68te"]
+atlas = ExtResource("1_4fw0t")
+region = Rect2(128, 32, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n17ce"]
+atlas = ExtResource("1_4fw0t")
+region = Rect2(112, 32, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_dvmrw"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b68te")
+}],
+"loop": true,
+"name": &"done",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n17ce")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4fw0t"]
+size = Vector2(16, 16)
+
+[node name="Area2D" type="Area2D" unique_id=1009914253]
+script = ExtResource("1_b68te")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=70418047]
+sprite_frames = SubResource("SpriteFrames_dvmrw")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.79335743
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=43407471]
+shape = SubResource("RectangleShape2D_4fw0t")
+
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=1220364274]
+target_position = Vector2(0, 14)
+
+[node name="PickupSound" type="AudioStreamPlayer2D" parent="." unique_id=1929464426]
+stream = ExtResource("3_n17ce")
+
+[node name="Label" type="Label" parent="." unique_id=607461133]
+offset_left = -51.0
+offset_top = -38.0
+offset_right = 51.0
+offset_bottom = -15.0
+theme_override_fonts/font = ExtResource("4_dvmrw")
+text = "+2 coins"
