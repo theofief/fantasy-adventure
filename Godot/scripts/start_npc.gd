@@ -50,7 +50,15 @@ func start_dialogue():
 	hint_label.hide()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
-	current_balloon = DialogueManager.show_dialogue_balloon(dialogue_resource, dialogue_start)
+	# Sélectionner le dialogue selon le nombre de slimes tués
+	var dialogue_to_play = dialogue_start
+	if DialogueVariables.slimes_killed >= 5:
+		dialogue_to_play = "end_first_island"
+		print("🎯 5 slimes tués détecté - Dialogue: end_first_island")
+	else:
+		print("📜 Dialogue: start (%d slimes tués)" % DialogueVariables.slimes_killed)
+	
+	current_balloon = DialogueManager.show_dialogue_balloon(dialogue_resource, dialogue_to_play)
 
 	if not DialogueManager.dialogue_ended.is_connected(Callable(self, "_on_dialogue_ended")):
 		DialogueManager.dialogue_ended.connect(Callable(self, "_on_dialogue_ended"))

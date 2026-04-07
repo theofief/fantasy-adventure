@@ -1,17 +1,28 @@
 ~ start
-Nathan: [[Hi|Hello|Howdy]], welcome to the island !
+Nathan: [[Hi|Hello|Howdy]], welcome to the island!
 Nathan: I'm sorry but you can't stay here...
 - Why ???
-	Nathan: Because our island just became infested by slimes
-	- No worry I'm a hero, I'll help you !
-		Nathan: What ? Really ?
-		- Of course !
-			Nathan: Oh thanks a lot !
-			Nathan: I think the first thing you should do is to find the cave
-			Nathan: It's where they camed out first
-			- Let me take a look then !
-				Nathan: Thanks a lot, then see you soon I guess ! Do your best hero !!!!
-#- Second one
-#	Nathan: You picked the second one.
-#- Start again => start
+	Nathan: Because our island just became infested by slimes.
+	- No worries, I'm a hero, I'll help you!
+		Nathan: What? Really?
+		- Of course!
+			Nathan: Oh thanks a lot!
+			Nathan: I think the first thing you should do is to find the cave.
+			Nathan: It's where they came out first.
+			- Let me take a look then!
+				Nathan: Alright, and if you're a real hero, please kill 5 slimes before coming back to me.
+				Nathan: You should use the key "K" when near a slime, you can also use the "M" to see the map and "esc" to set game to epause
+				- Alright, I'll do my best no worry.
+					Nathan: Thanks a lot, then see you soon I guess! Do your best hero!!!!
+
+=> END
+
+~ end_first_island
+Nathan: Welcome back hero!
+Nathan: So you didn't lie, you killed 5 slimes only with your sword! That's sounds really amazing and I'm gonna tell your story to all peoples I know...
+Nathan: I really had the chance to meet a hero... woah
+Nathan: Well sorry lol, you can now continue your adventure in the next island!
+Nathan: Next island will be the main city, it's now still in build but you may can take a look to files, few things are already here!
+Nathan: See you soon hero!
+
 => END
