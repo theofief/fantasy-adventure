@@ -53,6 +53,13 @@ text = "Fantasy Adventure"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="GreetingLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_bqqt6")
+theme_override_font_sizes/font_size = 18
+text = "Bonjour, aventurier"
+horizontal_alignment = 1
+
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1775402801]
 layout_mode = 2
 alignment = 1
@@ -94,8 +101,21 @@ text = "Settings"
 [node name="Separator4" type="Control" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=499292949]
 layout_mode = 2
 
-[node name="QuitButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=433540101]
+[node name="BottomActions" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer"]
 custom_minimum_size = Vector2(300, 40)
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LogoutButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer/BottomActions"]
+custom_minimum_size = Vector2(146, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_bqqt6")
+text = "Se deconnecter"
+
+[node name="QuitButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer/BottomActions" unique_id=433540101]
+custom_minimum_size = Vector2(146, 40)
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("2_bqqt6")
 text = "Quit"

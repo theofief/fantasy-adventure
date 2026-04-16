@@ -11,11 +11,12 @@ config_version=5
 [application]
 
 config/name="Fantasy Adventure"
-run/main_scene="uid://cptpukuybynjh"
+run/main_scene="res://scenes/startup.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 
 [autoload]
 
+AuthManager="*res://scripts/auth_manager.gd"
 GlobalEnemyStates="*res://scripts/global_enemy_states.gd"
 DialogueVariables="*res://scripts/dialogue_variables.gd"
 DialogueManager="*uid://c3rodes2l3gxb"
