@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 [autoload]
 
 AuthManager="*res://scripts/auth_manager.gd"
+SettingsManager="*res://scripts/settings_manager.gd"
 GlobalEnemyStates="*res://scripts/global_enemy_states.gd"
 DialogueVariables="*res://scripts/dialogue_variables.gd"
 DialogueManager="*uid://c3rodes2l3gxb"
@@ -98,6 +99,7 @@ ui_hit={
 
 [internationalization]
 
+locale/translations=PackedStringArray("res://l10n/en.po", "res://l10n/fr.po", "res://l10n/es.po")
 locale/translations_pot_files=PackedStringArray("res://dialogues/starter.dialogue")
 
 [physics]

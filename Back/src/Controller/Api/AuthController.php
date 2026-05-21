@@ -175,6 +175,7 @@ class AuthController extends AbstractController
             'prenom' => $user->getPrenom(),
             'dateNaissance' => $user->getDateNaissance()->format(DateTimeInterface::ATOM),
             'pseudo' => $user->getPseudo(),
+            'admin' => $user->isAdmin(),
             'gameData' => $user->getGameData(),
         ];
     }

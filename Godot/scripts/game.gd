@@ -17,6 +17,17 @@ func _ready() -> void:
 	timer.timeout.connect(_on_timer_timeout)
 	start_timer()
 
+	# Instancier le compteur de slimes (HUD)
+	var sc_script := load("res://scripts/slime_counter.gd")
+	if sc_script != null:
+		var sc_node = sc_script.new()
+		add_child(sc_node)
+
+
+func _enter_tree() -> void:
+	if AuthManager != null:
+		AuthManager.apply_saved_game_state()
+
 
 func start_timer() -> void:
 	timer.wait_time = randf_range(min_delay, max_delay)

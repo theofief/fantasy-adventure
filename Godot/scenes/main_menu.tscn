@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dqdbpn6sbjjsp" path="res://scripts/main_menu.gd" id="1_bqqt6"]
 [ext_resource type="FontFile" uid="uid://crft7xjpq21ha" path="res://assets/fonts/PixelOperator8.ttf" id="1_ekxnf"]
 [ext_resource type="FontFile" uid="uid://dj0giqk7mfwmq" path="res://assets/fonts/PixelOperator8-Bold.ttf" id="2_bqqt6"]
+[ext_resource type="PackedScene" path="res://scenes/language_selector.tscn" id="3_lang"]
 
 [node name="main_menu" type="Control" unique_id=989359725]
 layout_mode = 3
@@ -59,6 +60,14 @@ theme_override_fonts/font = ExtResource("2_bqqt6")
 theme_override_font_sizes/font_size = 18
 text = "Bonjour, aventurier"
 horizontal_alignment = 1
+
+[node name="OfflineModeLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_bqqt6")
+theme_override_font_sizes/font_size = 12
+text = "Mode hors ligne"
+horizontal_alignment = 1
+visible = false
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1775402801]
 layout_mode = 2
@@ -119,3 +128,5 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("2_bqqt6")
 text = "Quit"
+
+[node name="LanguageSelector" parent="." instance=ExtResource("3_lang")]

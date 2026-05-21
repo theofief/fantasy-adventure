@@ -1,0 +1,27 @@
+~ start
+Nathan: Salut, bienvenue sur l'ile !
+Nathan: Desole, mais tu ne peux pas rester ici...
+- Pourquoi ???
+	Nathan: Parce que notre ile vient d'etre infestee par des slimes.
+	- T'inquiete, je suis un heros, je vais vous aider !
+		Nathan: Quoi ? Vraiment ?
+		- Bien sur !
+			Nathan: Oh merci beaucoup !
+			Nathan: Je pense que la premiere chose a faire est de trouver la grotte.
+			Nathan: C'est de la qu'ils sont sortis au debut.
+			- Je vais aller voir ca alors !
+				Nathan: D'accord, et si tu es un vrai heros, tue 5 slimes avant de revenir me voir (utilise la touche d'attaque quand ton personnage est pres d'un slime).
+				- D'accord, je vais faire de mon mieux.
+					Nathan: Merci beaucoup, a tres bientot j'espere ! Donne tout, heros !!!!
+
+=> END
+
+~ end_first_island
+Nathan: Te revoila, heros !
+Nathan: Donc tu ne mentais pas, tu as tue 5 slimes avec seulement ton epee ! C'est vraiment incroyable, je vais raconter ton histoire a tout le monde...
+Nathan: J'ai vraiment eu de la chance de rencontrer un heros... woah
+Nathan: Bon desole lol, tu peux maintenant continuer ton aventure vers l'ile suivante !
+Nathan: La prochaine ile sera la ville principale. Elle est encore en construction, mais tu peux deja aller jeter un coup d'oeil !
+Nathan: A bientot, heros !
+
+=> END

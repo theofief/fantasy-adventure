@@ -18,7 +18,10 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            stateless: true
+            # Admin area uses session-based checks in code (admin_user_id).
+            # Disable stateless to allow session usage. Consider migrating to Symfony auth.
+            stateless: false
+            # Allow anonymous requests so controller-level session auth can run.
 
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -30,6 +33,11 @@ security:
     access_control:
         - { path: ^/api/(register|login)$, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: PUBLIC_ACCESS }
+        # Allow the admin login page so the controller can establish its session-based auth.
+        - { path: ^/admin/login$, roles: PUBLIC_ACCESS }
+        # Leave admin routes accessible to anonymous requests so the controller
+        # can establish and validate its session-based admin authentication.
+        - { path: ^/admin, roles: PUBLIC_ACCESS }
 
 when@test:
     security:

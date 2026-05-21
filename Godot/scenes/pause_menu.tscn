@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bi8ynah86ahbd" path="res://scripts/pause_menu.gd" id="1_kukqi"]
 [ext_resource type="Shader" uid="uid://d1o2fvmv61isf" path="res://Shaders/pause_menu.gdshader" id="1_myx47"]
 [ext_resource type="FontFile" uid="uid://dj0giqk7mfwmq" path="res://assets/fonts/PixelOperator8-Bold.ttf" id="2_kukqi"]
+[ext_resource type="PackedScene" path="res://scenes/language_selector.tscn" id="3_lang"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5d2l8"]
 shader = ExtResource("1_myx47")
@@ -199,6 +200,8 @@ text = "Back to main"
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=745034028]
 libraries/ = SubResource("AnimationLibrary_1s2dm")
+
+[node name="LanguageSelector" parent="." instance=ExtResource("3_lang")]
 
 [connection signal="pressed" from="PanelContainer/HBoxContainer/VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
 [connection signal="pressed" from="PanelContainer/HBoxContainer/VBoxContainer/SettingsButton" to="." method="_on_settings_button_pressed"]

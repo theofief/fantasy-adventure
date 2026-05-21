@@ -43,6 +43,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::JSON)]
     private array $gameData = [];
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $admin = false;
+
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $apiToken = null;
 
@@ -131,6 +134,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setGameData(array $gameData): self
     {
         $this->gameData = $gameData;
+
+        return $this;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->admin;
+    }
+
+    public function setAdmin(bool $admin): self
+    {
+        $this->admin = $admin;
 
         return $this;
     }

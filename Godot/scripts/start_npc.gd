@@ -11,9 +11,12 @@ var dialogue_active := false
 var current_balloon : Node = null
 
 func _ready():
+	hint_label.text = tr("Press \"E\"")
 	hint_label.hide()
 	connect("body_entered", Callable(self, "_on_body_entered"))
 	connect("body_exited", Callable(self, "_on_body_exited"))
+	if SettingsManager != null and SettingsManager.has_signal("locale_changed"):
+		SettingsManager.locale_changed.connect(_on_locale_changed)
 
 func _process(_delta):
 	# Interaction
@@ -92,3 +95,7 @@ func end_dialogue_properly():
 
 func _on_dialogue_ended(_res : DialogueResource) -> void:
 	end_dialogue_properly()
+
+
+func _on_locale_changed(_locale_code: String) -> void:
+	hint_label.text = tr("Press \"E\"")

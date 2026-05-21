@@ -7,7 +7,7 @@ const MAIN_MENU_SCENE := "res://scenes/main_menu.tscn"
 
 
 func _ready() -> void:
-	status_label.text = "Connexion automatique..."
+	status_label.text = tr("Connexion automatique...")
 	await get_tree().process_frame
 
 	var is_authenticated := await AuthManager.async_validate_saved_session()

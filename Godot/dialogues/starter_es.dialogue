@@ -1,0 +1,27 @@
+~ start
+Nathan: Hola, bienvenido a la isla!
+Nathan: Lo siento, pero no puedes quedarte aqui...
+- Por que???
+	Nathan: Porque nuestra isla acaba de llenarse de slimes.
+	- No te preocupes, soy un heroe, voy a ayudaros!
+		Nathan: Que? En serio?
+		- Claro!
+			Nathan: Oh, muchas gracias!
+			Nathan: Creo que lo primero que deberias hacer es encontrar la cueva.
+			Nathan: Es de donde salieron al principio.
+			- Voy a echar un vistazo entonces!
+				Nathan: Vale, y si eres un verdadero heroe, mata 5 slimes antes de volver conmigo (usa la tecla de ataque cuando el personaje este cerca de un slime).
+				- Vale, hare todo lo posible.
+					Nathan: Muchas gracias, hasta pronto entonces! Da lo mejor de ti, heroe!!!!
+
+=> END
+
+~ end_first_island
+Nathan: Bienvenido de nuevo, heroe!
+Nathan: Entonces no mentias, mataste 5 slimes solo con tu espada! Eso suena increible y voy a contar tu historia a toda la gente que conozco...
+Nathan: De verdad tuve suerte de conocer a un heroe... woah
+Nathan: Bueno, perdon lol, ahora puedes continuar tu aventura hacia la siguiente isla!
+Nathan: La siguiente isla sera la ciudad principal. Aun esta en construccion, pero ya puedes echar un vistazo a algunos elementos!
+Nathan: Hasta pronto, heroe!
+
+=> END

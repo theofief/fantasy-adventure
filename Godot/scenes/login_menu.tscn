@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/login_menu.gd" id="1_script"]
 [ext_resource type="FontFile" path="res://assets/fonts/PixelOperator8.ttf" id="2_font_regular"]
 [ext_resource type="FontFile" path="res://assets/fonts/PixelOperator8-Bold.ttf" id="3_font_bold"]
+[ext_resource type="PackedScene" path="res://scenes/language_selector.tscn" id="4_lang"]
 
 [node name="login_menu" type="Control"]
 layout_mode = 3
@@ -152,6 +153,23 @@ theme_override_fonts/font = ExtResource("3_font_bold")
 theme_override_font_sizes/font_size = 16
 text = "Creer un compte"
 
+[node name="ServerStatusLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font_bold")
+theme_override_font_sizes/font_size = 14
+text = "Verification du serveur..."
+horizontal_alignment = 1
+
+[node name="OfflineModeLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font_bold")
+theme_override_font_sizes/font_size = 12
+text = "Mode hors ligne"
+horizontal_alignment = 1
+visible = false
+
 [node name="FeedbackLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
@@ -161,6 +179,13 @@ text = ""
 [node name="ActionsContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 2
+
+[node name="OfflineButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer/ActionsContainer"]
+custom_minimum_size = Vector2(190, 36)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font_bold")
+theme_override_font_sizes/font_size = 16
+text = "Jouer offline"
 
 [node name="QuitButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer/ActionsContainer"]
 custom_minimum_size = Vector2(150, 36)
@@ -172,3 +197,5 @@ text = "Quitter"
 [node name="BottomSpacer" type="Control" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="LanguageSelector" parent="." instance=ExtResource("4_lang")]

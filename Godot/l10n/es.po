@@ -1,0 +1,300 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Fantasy Adventure\n"
+"Language: es\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Fantasy Adventure"
+msgstr "Fantasy Adventure"
+
+msgid "Connectez-vous ou creez un compte"
+msgstr "Inicia sesion o crea una cuenta"
+
+msgid "Email"
+msgstr "Correo"
+
+msgid "Mot de passe"
+msgstr "Contrasena"
+
+msgid "Se connecter"
+msgstr "Iniciar sesion"
+
+msgid "Connexion"
+msgstr "Iniciar sesion"
+
+msgid "Creer Compte"
+msgstr "Crear cuenta"
+
+msgid "Confirmer le mot de passe"
+msgstr "Confirmar contrasena"
+
+msgid "Nom"
+msgstr "Apellido"
+
+msgid "Prenom"
+msgstr "Nombre"
+
+msgid "Date de naissance (YYYY-MM-DD)"
+msgstr "Fecha de nacimiento (YYYY-MM-DD)"
+
+msgid "Pseudo"
+msgstr "Apodo"
+
+msgid "Creer un compte"
+msgstr "Crear cuenta"
+
+msgid "Verification du serveur..."
+msgstr "Comprobando servidor..."
+
+msgid "Verification du serveur"
+msgstr "Comprobando servidor"
+
+msgid "Serveur en ligne"
+msgstr "Servidor en linea"
+
+msgid "Serveur hors ligne"
+msgstr "Servidor fuera de linea"
+
+msgid "Mode hors ligne"
+msgstr "Modo sin conexion"
+
+msgid "Jouer offline"
+msgstr "Jugar sin conexion"
+
+msgid "Jouer hors ligne"
+msgstr "Jugar sin conexion"
+
+msgid "Quitter"
+msgstr "Salir"
+
+msgid "Bonjour, %s"
+msgstr "Hola, %s"
+
+msgid "Play Solo "
+msgstr "Jugar solo"
+
+msgid "Play Mini Games"
+msgstr "Minijuegos"
+
+msgid "Settings"
+msgstr "Ajustes"
+
+msgid "Se deconnecter"
+msgstr "Cerrar sesion"
+
+msgid "Quit"
+msgstr "Salir"
+
+msgid "Connexion automatique..."
+msgstr "Conexion automatica..."
+
+msgid "Parametres"
+msgstr "Ajustes"
+
+msgid "Clique sur un bouton puis appuie sur la nouvelle touche"
+msgstr "Haz clic en un boton y luego pulsa la nueva tecla"
+
+msgid "Pause / retour / annuler / fermer"
+msgstr "Pausa / volver / cancelar / cerrar"
+
+msgid "Interagir"
+msgstr "Interactuar"
+
+msgid "Ouvrir la carte"
+msgstr "Abrir mapa"
+
+msgid "Attaquer"
+msgstr "Atacar"
+
+msgid "Saut"
+msgstr "Saltar"
+
+msgid "Accroupir"
+msgstr "Agacharse"
+
+msgid "Gauche (vehicule / UI)"
+msgstr "Izquierda (vehiculo / UI)"
+
+msgid "Droite (vehicule / UI)"
+msgstr "Derecha (vehiculo / UI)"
+
+msgid "Haut (vehicule / UI)"
+msgstr "Arriba (vehiculo / UI)"
+
+msgid "Bas (vehicule / UI)"
+msgstr "Abajo (vehiculo / UI)"
+
+msgid "Deplacement gauche"
+msgstr "Mover izquierda"
+
+msgid "Deplacement droite"
+msgstr "Mover derecha"
+
+msgid "Deplacement haut"
+msgstr "Mover arriba"
+
+msgid "Deplacement bas"
+msgstr "Mover abajo"
+
+msgid "Touche 1"
+msgstr "Tecla 1"
+
+msgid "Touche 2"
+msgstr "Tecla 2"
+
+msgid "Clique sur une touche pour la modifier."
+msgstr "Haz clic en una tecla para cambiarla."
+
+msgid "Touche modifiee."
+msgstr "Tecla modificada."
+
+msgid "Appuie maintenant sur une touche pour %s (%s)..."
+msgstr "Pulsa ahora una tecla para %s (%s)..."
+
+msgid "Touches restaurees par defaut."
+msgstr "Teclas restauradas por defecto."
+
+msgid "Reconnexion automatique au serveur"
+msgstr "Reconectar automaticamente al servidor"
+
+msgid "Restaurer par defaut"
+msgstr "Restaurar por defecto"
+
+msgid "Retour"
+msgstr "Volver"
+
+msgid "Resume"
+msgstr "Reanudar"
+
+msgid "Back to main"
+msgstr "Volver al menu"
+
+msgid "Press \"E\""
+msgstr "Pulsa \"E\""
+
+msgid "Renseigne ton profil local pour lancer une session sans serveur"
+msgstr "Completa tu perfil local para iniciar una sesion sin servidor"
+
+msgid "Annuler"
+msgstr "Cancelar"
+
+msgid "Champs requis — remplissez tous les champs"
+msgstr "Campos obligatorios - completa todos los campos"
+
+msgid "Date invalide — format attendu YYYY-MM-DD"
+msgstr "Fecha invalida - formato esperado YYYY-MM-DD"
+
+msgid "Email et mot de passe obligatoires."
+msgstr "Correo y contrasena obligatorios."
+
+msgid "Slimes killed: %d/5"
+msgstr "Slimes eliminados: %d/5"
+
+
+msgid "Connexion reussie."
+msgstr "Inicio de sesion correcto."
+
+msgid "Serveur hors ligne ou inaccessible."
+msgstr "Servidor fuera de linea o inaccesible."
+
+msgid "Echec de connexion."
+msgstr "Error de inicio de sesion."
+
+msgid "Tous les champs de creation de compte sont obligatoires."
+msgstr "Todos los campos de creacion de cuenta son obligatorios."
+
+msgid "Les mots de passe ne correspondent pas."
+msgstr "Las contrasenas no coinciden."
+
+msgid "Date invalide. Format attendu: YYYY-MM-DD"
+msgstr "Fecha invalida. Formato esperado: YYYY-MM-DD"
+
+msgid "Compte cree et connexion reussie."
+msgstr "Cuenta creada e inicio correcto."
+
+msgid "Echec de creation de compte."
+msgstr "Error al crear la cuenta."
+
+msgid "Mode hors ligne activé."
+msgstr "Modo sin conexion activado."
+
+msgid "Mode hors ligne activé"
+msgstr "Modo sin conexion activado"
+
+msgid "Profil restauré depuis la sauvegarde hors-ligne"
+msgstr "Perfil restaurado desde la copia sin conexion"
+
+msgid "Connexion automatique en mode hors ligne (profil local utilisé)"
+msgstr "Inicio automatico en modo sin conexion (perfil local usado)"
+
+msgid "Erreur serveur (%d)."
+msgstr "Error del servidor (%d)."
+
+msgid "Hi"
+msgstr "Hola"
+
+msgid "Hello"
+msgstr "Hola"
+
+msgid "Howdy"
+msgstr "Buenas"
+
+msgid "welcome to the island!"
+msgstr "bienvenido a la isla!"
+
+msgid "I'm sorry but you can't stay here..."
+msgstr "Lo siento, pero no puedes quedarte aqui..."
+
+msgid "Why ???"
+msgstr "Por que???"
+
+msgid "Because our island just became infested by slimes."
+msgstr "Porque nuestra isla acaba de llenarse de slimes."
+
+msgid "No worries, I'm a hero, I'll help you!"
+msgstr "No te preocupes, soy un heroe, voy a ayudaros!"
+
+msgid "What? Really?"
+msgstr "Que? En serio?"
+
+msgid "Of course!"
+msgstr "Claro!"
+
+msgid "Oh thanks a lot!"
+msgstr "Oh, muchas gracias!"
+
+msgid "I think the first thing you should do is to find the cave."
+msgstr "Creo que lo primero que deberias hacer es encontrar la cueva."
+
+msgid "It's where they came out first."
+msgstr "Es de donde salieron al principio."
+
+msgid "Let me take a look then!"
+msgstr "Voy a echar un vistazo entonces!"
+
+msgid "Alright, and if you're a real hero, please kill 5 slimes before coming back to me (use the attack key when the character is near a slime)."
+msgstr "Vale, y si eres un verdadero heroe, mata 5 slimes antes de volver conmigo (usa la tecla de ataque cuando el personaje este cerca de un slime)."
+
+msgid "Alright, I'll do my best no worry."
+msgstr "Vale, hare todo lo posible."
+
+msgid "Thanks a lot, then see you soon I guess! Do your best hero!!!!"
+msgstr "Muchas gracias, hasta pronto entonces! Da lo mejor de ti, heroe!!!!"
+
+msgid "Welcome back hero!"
+msgstr "Bienvenido de nuevo, heroe!"
+
+msgid "So you didn't lie, you killed 5 slimes only with your sword! That's sounds really amazing and I'm gonna tell your story to all peoples I know..."
+msgstr "Entonces no mentias, mataste 5 slimes solo con tu espada! Eso suena increible y voy a contar tu historia a toda la gente que conozco..."
+
+msgid "I really had the chance to meet a hero... woah"
+msgstr "De verdad tuve suerte de conocer a un heroe... woah"
+
+msgid "Well sorry lol, you can now continue your adventure in the next island!"
+msgstr "Bueno, perdon lol, ahora puedes continuar tu aventura hacia la siguiente isla!"
+
+msgid "Next island will be the main city, it's now still in build but you may can take a look to files, few things are already here!"
+msgstr "La siguiente isla sera la ciudad principal. Aun esta en construccion, pero ya puedes echar un vistazo a algunos elementos!"
+
+msgid "See you soon hero!"
+msgstr "Hasta pronto, heroe!"

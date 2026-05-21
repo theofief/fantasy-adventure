@@ -14,3 +14,5 @@ func remove_hp(amount: int):
 
 	print("Total hp:", hp)
 	emit_signal("hp_changed", hp)
+	if AuthManager != null and not AuthManager.is_applying_game_state():
+		AuthManager.commit_local_game_state()

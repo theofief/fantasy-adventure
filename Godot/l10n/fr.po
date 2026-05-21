@@ -1,0 +1,302 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Fantasy Adventure\n"
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Fantasy Adventure"
+msgstr "Fantasy Adventure"
+
+msgid "Connectez-vous ou creez un compte"
+msgstr "Connectez-vous ou creez un compte"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Mot de passe"
+msgstr "Mot de passe"
+
+msgid "Se connecter"
+msgstr "Se connecter"
+
+msgid "Connexion"
+msgstr "Connexion"
+
+msgid "Creer Compte"
+msgstr "Creer un compte"
+
+msgid "Confirmer le mot de passe"
+msgstr "Confirmer le mot de passe"
+
+msgid "Nom"
+msgstr "Nom"
+
+msgid "Prenom"
+msgstr "Prenom"
+
+msgid "Date de naissance (YYYY-MM-DD)"
+msgstr "Date de naissance (YYYY-MM-DD)"
+
+msgid "Pseudo"
+msgstr "Pseudo"
+
+msgid "Creer un compte"
+msgstr "Creer un compte"
+
+msgid "Verification du serveur..."
+msgstr "Verification du serveur..."
+
+msgid "Verification du serveur"
+msgstr "Verification du serveur"
+
+msgid "Serveur en ligne"
+msgstr "Serveur en ligne"
+
+msgid "Serveur hors ligne"
+msgstr "Serveur hors ligne"
+
+msgid "Mode hors ligne"
+msgstr "Mode hors ligne"
+
+msgid "Jouer offline"
+msgstr "Jouer hors ligne"
+
+msgid "Jouer hors ligne"
+msgstr "Jouer hors ligne"
+
+msgid "Quitter"
+msgstr "Quitter"
+
+msgid "Bonjour, %s"
+msgstr "Bonjour, %s"
+
+msgid "Play Solo "
+msgstr "Jouer solo"
+
+msgid "Play Mini Games"
+msgstr "Jouer aux mini-jeux"
+
+msgid "Settings"
+msgstr "Parametres"
+
+msgid "Se deconnecter"
+msgstr "Se deconnecter"
+
+msgid "Quit"
+msgstr "Quitter"
+
+msgid "Connexion automatique..."
+msgstr "Connexion automatique..."
+
+msgid "Parametres"
+msgstr "Parametres"
+
+msgid "Clique sur un bouton puis appuie sur la nouvelle touche"
+msgstr "Clique sur un bouton puis appuie sur la nouvelle touche"
+
+msgid "Pause / retour / annuler / fermer"
+msgstr "Pause / retour / annuler / fermer"
+
+msgid "Interagir"
+msgstr "Interagir"
+
+msgid "Ouvrir la carte"
+msgstr "Ouvrir la carte"
+
+msgid "Attaquer"
+msgstr "Attaquer"
+
+msgid "Saut"
+msgstr "Saut"
+
+msgid "Accroupir"
+msgstr "Accroupir"
+
+msgid "Gauche (vehicule / UI)"
+msgstr "Gauche (vehicule / UI)"
+
+msgid "Droite (vehicule / UI)"
+msgstr "Droite (vehicule / UI)"
+
+msgid "Haut (vehicule / UI)"
+msgstr "Haut (vehicule / UI)"
+
+msgid "Bas (vehicule / UI)"
+msgstr "Bas (vehicule / UI)"
+
+msgid "Deplacement gauche"
+msgstr "Deplacement gauche"
+
+msgid "Deplacement droite"
+msgstr "Deplacement droite"
+
+msgid "Deplacement haut"
+msgstr "Deplacement haut"
+
+msgid "Deplacement bas"
+msgstr "Deplacement bas"
+
+msgid "Touche 1"
+msgstr "Touche 1"
+
+msgid "Touche 2"
+msgstr "Touche 2"
+
+msgid "Clique sur une touche pour la modifier."
+msgstr "Clique sur une touche pour la modifier."
+
+msgid "Touche modifiee."
+msgstr "Touche modifiee."
+
+msgid "Appuie maintenant sur une touche pour %s (%s)..."
+msgstr "Appuie maintenant sur une touche pour %s (%s)..."
+
+msgid "Touches restaurees par defaut."
+msgstr "Touches restaurees par defaut."
+
+msgid "Reconnexion automatique au serveur"
+msgstr "Reconnexion automatique au serveur"
+
+msgid "Restaurer par defaut"
+msgstr "Restaurer par defaut"
+
+msgid "Retour"
+msgstr "Retour"
+
+msgid "Resume"
+msgstr "Reprendre"
+
+msgid "Back to main"
+msgstr "Retour au menu"
+
+msgid "Press \"E\""
+msgstr "Appuie sur \"E\""
+
+msgid "Renseigne ton profil local pour lancer une session sans serveur"
+msgstr "Renseigne ton profil local pour lancer une session sans serveur"
+
+msgid "Annuler"
+msgstr "Annuler"
+
+msgid "Champs requis — remplissez tous les champs"
+msgstr "Champs requis — remplissez tous les champs"
+
+msgid "Date invalide — format attendu YYYY-MM-DD"
+msgstr "Date invalide — format attendu YYYY-MM-DD"
+
+msgid "Email et mot de passe obligatoires."
+msgstr "Email et mot de passe obligatoires."
+
+msgid "Connexion reussie."
+msgstr "Connexion reussie."
+
+msgid "Serveur hors ligne ou inaccessible."
+msgstr "Serveur hors ligne ou inaccessible."
+
+msgid "Echec de connexion."
+msgstr "Echec de connexion."
+
+msgid "Tous les champs de creation de compte sont obligatoires."
+msgstr "Tous les champs de creation de compte sont obligatoires."
+
+msgid "Les mots de passe ne correspondent pas."
+msgstr "Les mots de passe ne correspondent pas."
+
+msgid "Date invalide. Format attendu: YYYY-MM-DD"
+msgstr "Date invalide. Format attendu: YYYY-MM-DD"
+
+msgid "Compte cree et connexion reussie."
+msgstr "Compte cree et connexion reussie."
+
+msgid "Echec de creation de compte."
+msgstr "Echec de creation de compte."
+
+msgid "Mode hors ligne activé."
+msgstr "Mode hors ligne activé."
+
+msgid "Mode hors ligne activé"
+msgstr "Mode hors ligne activé"
+
+msgid "Profil restauré depuis la sauvegarde hors-ligne"
+msgstr "Profil restauré depuis la sauvegarde hors-ligne"
+
+msgid "Connexion automatique en mode hors ligne (profil local utilisé)"
+msgstr "Connexion automatique en mode hors ligne (profil local utilisé)"
+
+msgid "Erreur serveur (%d)."
+msgstr "Erreur serveur (%d)."
+
+msgid "Hi"
+msgstr "Salut"
+
+msgid "Hello"
+msgstr "Bonjour"
+
+msgid "Howdy"
+msgstr "Yo"
+
+msgid "welcome to the island!"
+msgstr "bienvenue sur l'ile !"
+
+msgid "I'm sorry but you can't stay here..."
+msgstr "Desole, mais tu ne peux pas rester ici..."
+
+msgid "Why ???"
+msgstr "Pourquoi ???"
+
+msgid "Because our island just became infested by slimes."
+msgstr "Parce que notre ile vient d'etre infestee par des slimes."
+
+msgid "No worries, I'm a hero, I'll help you!"
+msgstr "T'inquiete, je suis un heros, je vais vous aider !"
+
+msgid "What? Really?"
+msgstr "Quoi ? Vraiment ?"
+
+msgid "Of course!"
+msgstr "Bien sur !"
+
+msgid "Oh thanks a lot!"
+msgstr "Oh merci beaucoup !"
+
+msgid "I think the first thing you should do is to find the cave."
+msgstr "Je pense que la premiere chose a faire est de trouver la grotte."
+
+msgid "It's where they came out first."
+msgstr "C'est de la qu'ils sont sortis au debut."
+
+msgid "Let me take a look then!"
+msgstr "Je vais aller voir ca alors !"
+
+msgid "Alright, and if you're a real hero, please kill 5 slimes before coming back to me (use the attack key when the character is near a slime)."
+msgstr "D'accord, et si tu es un vrai heros, tue 5 slimes avant de revenir me voir (utilise la touche d'attaque quand ton personnage est pres d'un slime)."
+
+msgid "Alright, I'll do my best no worry."
+msgstr "D'accord, je vais faire de mon mieux."
+
+msgid "Thanks a lot, then see you soon I guess! Do your best hero!!!!"
+msgstr "Merci beaucoup, a tres bientot j'espere ! Donne tout, heros !!!!"
+
+msgid "Welcome back hero!"
+msgstr "Te revoila, heros !"
+
+msgid "So you didn't lie, you killed 5 slimes only with your sword! That's sounds really amazing and I'm gonna tell your story to all peoples I know..."
+msgstr "Donc tu ne mentais pas, tu as tue 5 slimes avec seulement ton epee ! C'est vraiment incroyable, je vais raconter ton histoire a tout le monde..."
+
+msgid "I really had the chance to meet a hero... woah"
+msgstr "J'ai vraiment eu de la chance de rencontrer un heros... woah"
+
+msgid "Well sorry lol, you can now continue your adventure in the next island!"
+msgstr "Bon desole lol, tu peux maintenant continuer ton aventure vers l'ile suivante !"
+
+msgid "Next island will be the main city, it's now still in build but you may can take a look to files, few things are already here!"
+msgstr "La prochaine ile sera la ville principale. Elle est encore en construction, mais tu peux deja aller jeter un coup d'oeil !"
+
+msgid "See you soon hero!"
+msgstr "A bientot, heros !"
+
+msgid "Slimes killed: %d/5"
+msgstr "Slimes tués : %d/5"
+
+msgid "Bravo! You killed all the slimes. Return to the NPC."
+msgstr "Bravo ! Tu as tué tous les slimes. Retourne voir le PNJ."

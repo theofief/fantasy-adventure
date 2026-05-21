@@ -3,7 +3,15 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        enabled: true
+        # Harden session cookie settings
+        # - cookie_secure: 'auto' lets Symfony auto-detect HTTPS in dev/prod
+        # - cookie_httponly prevents JS access
+        # - cookie_samesite reduces CSRF risk for cross-site requests
+        cookie_secure: auto
+        cookie_httponly: true
+        cookie_samesite: lax
 
     #esi: true
     #fragments: true

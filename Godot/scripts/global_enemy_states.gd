@@ -11,6 +11,8 @@ func mark_enemy_dead(scene_path: String, position: Vector2) -> void:
 	var key = _get_enemy_key(scene_path, position)
 	dead_enemies[key] = true
 	print("📍 Ennemi marqué comme mort:", key)
+	if AuthManager != null and not AuthManager.is_applying_game_state():
+		AuthManager.commit_local_game_state()
 
 func is_enemy_dead(scene_path: String, position: Vector2) -> bool:
 	var key = _get_enemy_key(scene_path, position)
@@ -24,3 +26,5 @@ func _get_enemy_key(scene_path: String, position: Vector2) -> String:
 func clear_dead_enemies() -> void:
 	dead_enemies.clear()
 	print("🔄 États des ennemis réinitialisés")
+	if AuthManager != null and not AuthManager.is_applying_game_state():
+		AuthManager.commit_local_game_state()
