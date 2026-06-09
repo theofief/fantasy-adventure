@@ -15,8 +15,7 @@ func _ready() -> void:
 	
 func on_transition_done():
 	$player.set_physics_process(true)
-	$player.set_physics_process(false)
-	$player.set_process_input(false)
+	$player.set_process_input(true)
 
 
 func _on_area_exit_body_entered(body: Node2D) -> void:

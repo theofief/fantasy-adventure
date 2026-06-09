@@ -7,6 +7,13 @@ const MAIN_MENU_SCENE := "res://scenes/main_menu.tscn"
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	get_tree().paused = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	if UIManager != null:
+		UIManager.menu_open = false
+		UIManager.current_menu = ""
+
 	status_label.text = tr("Connexion automatique...")
 	await get_tree().process_frame
 

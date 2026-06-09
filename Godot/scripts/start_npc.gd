@@ -20,7 +20,7 @@ func _ready():
 
 func _process(_delta):
 	# Interaction
-	if player_inside and Input.is_action_just_pressed("ui_interact"):
+	if player_inside and Input.is_action_just_pressed("ui_interact") and (UIManager == null or not UIManager.menu_open):
 		if dialogue_resource and player and not dialogue_active:
 			start_dialogue()
 		else:

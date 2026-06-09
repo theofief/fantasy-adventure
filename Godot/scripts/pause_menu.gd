@@ -40,6 +40,11 @@ func pause():
 
 func testEsc():
 	if Input.is_action_just_pressed("esc"):
+		if UIManager.suppress_pause_once:
+			UIManager.suppress_pause_once = false
+			return
+		if UIManager.current_menu != "" and UIManager.current_menu != "pause":
+			return
 		if !get_tree().paused:
 			pause()
 		elif UIManager.current_menu == "pause":
@@ -47,6 +52,8 @@ func testEsc():
 
 func _process(_delta):
 	testEsc()
+	if UIManager.suppress_pause_once and not Input.is_action_just_pressed("esc"):
+		UIManager.suppress_pause_once = false
 
 func _on_resume_button_pressed() -> void:
 	resume()

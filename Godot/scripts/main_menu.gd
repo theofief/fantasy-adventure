@@ -19,6 +19,13 @@ var settings_overlay: SettingsMenu
 
 
 func _ready():
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	get_tree().paused = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	if UIManager != null:
+		UIManager.menu_open = false
+		UIManager.current_menu = ""
+
 	PlaySoloButton.button_down.connect(on_start_pressed)
 	SettingsButton.button_down.connect(on_settings_pressed)
 	LogoutButton.button_down.connect(on_logout_pressed)

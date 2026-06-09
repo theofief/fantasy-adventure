@@ -15,6 +15,7 @@ const TRACKED_ACTIONS := [
 	"ui_space",
 	"ui_shift",
 	"ui_interact",
+	"ui_inventory",
 	"ui_toggle_map",
 	"ui_hit",
 ]
@@ -45,7 +46,9 @@ func load_bindings() -> void:
 		return
 
 	for action_name in TRACKED_ACTIONS:
-		var serialized_events: Variant = config.get_value("input", action_name, null)
+		if not config.has_section_key("input", action_name):
+			continue
+		var serialized_events: Variant = config.get_value("input", action_name)
 		if typeof(serialized_events) != TYPE_ARRAY:
 			continue
 		_apply_serialized_events(action_name, serialized_events)
@@ -173,9 +176,6 @@ func assign_key_binding(action_name: String, slot_index: int, key_event: InputEv
 		return
 	if slot_index < 0:
 		return
-
-	for other_action in TRACKED_ACTIONS:
-		_remove_matching_key(other_action, key_event)
 
 	var key_events := _get_key_events(action_name)
 	while key_events.size() <= slot_index:
@@ -309,13 +309,13 @@ func _deserialize_event(data: Variant) -> InputEventKey:
 		return null
 
 	var event := InputEventKey.new()
-	event.keycode = int(data.get("keycode", 0))
-	event.physical_keycode = int(data.get("physical_keycode", 0))
+	event.keycode = int(data.get("keycode", 0)) as Key
+	event.physical_keycode = int(data.get("physical_keycode", 0)) as Key
 	event.shift_pressed = bool(data.get("shift_pressed", false))
 	event.alt_pressed = bool(data.get("alt_pressed", false))
 	event.ctrl_pressed = bool(data.get("ctrl_pressed", false))
 	event.meta_pressed = bool(data.get("meta_pressed", false))
-	event.location = int(data.get("location", 0))
+	event.location = int(data.get("location", 0)) as KeyLocation
 	return event
 
 

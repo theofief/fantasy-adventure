@@ -32,6 +32,13 @@ var _server_status_sequence_id: int = 0
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	get_tree().paused = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	if UIManager != null:
+		UIManager.menu_open = false
+		UIManager.current_menu = ""
+
 	login_button.pressed.connect(_on_login_pressed)
 	register_button.pressed.connect(_on_register_pressed)
 	offline_button.pressed.connect(_on_offline_pressed)

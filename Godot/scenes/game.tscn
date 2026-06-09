@@ -31,6 +31,7 @@
 [ext_resource type="Script" uid="uid://bfavmn8krcw0n" path="res://scripts/start_npc.gd" id="29_suyxu"]
 [ext_resource type="Resource" uid="uid://c7tik0s14nju0" path="res://dialogues/starter.dialogue" id="30_sgl2t"]
 [ext_resource type="PackedScene" uid="uid://dmse073h7vf5s" path="res://scenes/slime_medium_blue_world.tscn" id="31_qouja"]
+[ext_resource type="Script" path="res://scripts/inventory_ui.gd" id="32_inventory"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_1kice"]
 texture = ExtResource("2_yqjtg")
@@ -1776,6 +1777,9 @@ script = ExtResource("23_qnb83")
 position = Vector2(28, 49)
 sprite_frames = SubResource("SpriteFrames_suyxu")
 autoplay = "default"
+
+[node name="InventoryUI" type="CanvasLayer" parent="."]
+script = ExtResource("32_inventory")
 
 [node name="MapLayer" type="CanvasLayer" parent="." unique_id=1975875633]
 process_mode = 3

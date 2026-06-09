@@ -6,6 +6,7 @@ signal back_requested
 const ACTION_DEFINITIONS := [
 	{"action": "esc", "label": "Pause / retour / annuler / fermer"},
 	{"action": "ui_interact", "label": "Interagir"},
+	{"action": "ui_inventory", "label": "Ouvrir l'inventaire"},
 	{"action": "ui_toggle_map", "label": "Ouvrir la carte"},
 	{"action": "ui_hit", "label": "Attaquer"},
 	{"action": "ui_space", "label": "Saut"},
@@ -35,6 +36,8 @@ const SLOT_LABELS := ["Touche 1", "Touche 2"]
 @onready var auto_reconnect_label: Label = $MarginContainer/VBoxContainer/PanelContainer/MarginContainer/VBoxContainer/AutoReconnectContainer/AutoReconnectLabel
 
 var _binding_buttons: Dictionary = {}
+var _default_button_style: StyleBox
+var _duplicate_button_style: StyleBox
 var _waiting_action_name: String = ""
 var _waiting_slot_index: int = -1
 var opened_from_pause: bool = false
@@ -42,6 +45,7 @@ var opened_from_pause: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_prepare_button_styles()
 	_build_action_rows()
 	_refresh_all_buttons()
 	back_button.pressed.connect(_on_back_pressed)
@@ -77,7 +81,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		_waiting_action_name = ""
 		_waiting_slot_index = -1
 		_refresh_all_buttons()
-		_set_feedback(tr("Touche modifiee."), Color(0.55, 1, 0.55))
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("esc") or event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
@@ -146,6 +149,7 @@ func _build_action_rows() -> void:
 
 
 func _refresh_all_buttons() -> void:
+	var duplicate_slots := _get_duplicate_binding_slots()
 	for definition in ACTION_DEFINITIONS:
 		var action_name := str(definition["action"])
 		var slot_buttons: Array = _binding_buttons.get(action_name, [])
@@ -153,6 +157,14 @@ func _refresh_all_buttons() -> void:
 			var button := slot_buttons[slot_index] as Button
 			if button:
 				button.text = SettingsManager.get_action_binding_text(action_name, slot_index)
+				var slot_key := _make_slot_key(action_name, slot_index)
+				_set_button_duplicate_state(button, duplicate_slots.has(slot_key))
+
+	if duplicate_slots.is_empty():
+		if _waiting_action_name == "":
+			_set_feedback(tr("Clique sur une touche pour la modifier."), Color(1, 1, 1))
+	else:
+		_set_feedback(tr("Touche en double detectee."), Color(1, 0.35, 0.35))
 
 
 func _on_rebind_pressed(action_name: String, slot_index: int) -> void:
@@ -214,6 +226,94 @@ func _refresh_translated_ui() -> void:
 func _set_feedback(text: String, color: Color) -> void:
 	feedback_label.text = text
 	feedback_label.modulate = color
+
+
+func _prepare_button_styles() -> void:
+	_duplicate_button_style = StyleBoxFlat.new()
+	_duplicate_button_style.bg_color = Color(0.45, 0.05, 0.05, 0.95)
+	_duplicate_button_style.border_color = Color(1.0, 0.22, 0.22, 1.0)
+	_duplicate_button_style.border_width_left = 2
+	_duplicate_button_style.border_width_top = 2
+	_duplicate_button_style.border_width_right = 2
+	_duplicate_button_style.border_width_bottom = 2
+	_duplicate_button_style.corner_radius_top_left = 4
+	_duplicate_button_style.corner_radius_top_right = 4
+	_duplicate_button_style.corner_radius_bottom_left = 4
+	_duplicate_button_style.corner_radius_bottom_right = 4
+
+
+func _set_button_duplicate_state(button: Button, has_duplicate: bool) -> void:
+	if has_duplicate:
+		button.add_theme_stylebox_override("normal", _duplicate_button_style)
+		button.add_theme_stylebox_override("hover", _duplicate_button_style)
+		button.add_theme_stylebox_override("pressed", _duplicate_button_style)
+		button.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+		button.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
+		return
+
+	button.remove_theme_stylebox_override("normal")
+	button.remove_theme_stylebox_override("hover")
+	button.remove_theme_stylebox_override("pressed")
+	button.remove_theme_color_override("font_color")
+	button.remove_theme_color_override("font_hover_color")
+	button.remove_theme_color_override("font_pressed_color")
+
+
+func _get_duplicate_binding_slots() -> Dictionary:
+	var key_to_slots: Dictionary = {}
+	var duplicates: Dictionary = {}
+
+	for definition in ACTION_DEFINITIONS:
+		var action_name := str(definition["action"])
+		var key_events := _get_action_key_events(action_name)
+		for slot_index in range(key_events.size()):
+			var event: InputEventKey = key_events[slot_index]
+			if event == null:
+				continue
+
+			var event_key := _make_event_key(event)
+			if event_key == "":
+				continue
+
+			var slot_key := _make_slot_key(action_name, slot_index)
+			if not key_to_slots.has(event_key):
+				key_to_slots[event_key] = []
+			key_to_slots[event_key].append(slot_key)
+
+	for slot_keys in key_to_slots.values():
+		if slot_keys.size() <= 1:
+			continue
+		for slot_key in slot_keys:
+			duplicates[slot_key] = true
+
+	return duplicates
+
+
+func _get_action_key_events(action_name: String) -> Array[InputEventKey]:
+	var key_events: Array[InputEventKey] = []
+	for event in InputMap.action_get_events(action_name):
+		if event is InputEventKey:
+			key_events.append(event as InputEventKey)
+	return key_events
+
+
+func _make_event_key(event: InputEventKey) -> String:
+	var key_code := event.physical_keycode if event.physical_keycode != 0 else event.keycode
+	if key_code == 0:
+		return ""
+	return "%s:%s:%s:%s:%s:%s" % [
+		key_code,
+		event.shift_pressed,
+		event.alt_pressed,
+		event.ctrl_pressed,
+		event.meta_pressed,
+		event.location,
+	]
+
+
+func _make_slot_key(action_name: String, slot_index: int) -> String:
+	return "%s:%d" % [action_name, slot_index]
 
 
 func _duplicate_key_event(source: InputEventKey) -> InputEventKey:

@@ -781,6 +781,7 @@ height = 32.0
 [node name="player" type="Node2D" unique_id=1518828522]
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=667108592]
+collision_mask = 3
 script = ExtResource("1_g2els")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=2023741138]

@@ -1,8 +1,9 @@
 extends Node
 
-const API_BASE_URLS := ["http://127.0.0.1:8000/api", "http://127.0.0.1:8099/api"]
+const API_BASE_URLS := ["http://127.0.0.1:8099/api", "http://127.0.0.1:8000/api"]
 const SESSION_FILE_PATH := "user://auth_session.cfg"
 const SERVER_RECONNECT_CHECK_SECONDS := 8.0
+const REQUEST_TIMEOUT_SECONDS := 5.0
 
 var email: String = ""
 var password: String = ""
@@ -295,7 +296,7 @@ func _refresh_saved_session_from_server() -> bool:
 	_apply_user_profile(resolved_profile)
 	save_session()
 	_write_offline_backup()
-	await _sync_bindings_after_auth()
+	_sync_bindings_after_auth()
 	await _sync_pending_profile_game_data_async()
 	_is_refreshing_saved_session = false
 	return true
@@ -535,6 +536,7 @@ func _request_json(endpoint: String, method: HTTPClient.Method, payload := {}, b
 	for base_url in API_BASE_URLS:
 		var url: String = str(base_url) + str(endpoint)
 		var request_node := HTTPRequest.new()
+		request_node.timeout = REQUEST_TIMEOUT_SECONDS
 		add_child(request_node)
 		var request_error := request_node.request(url, headers, method, body)
 		if request_error != OK:
@@ -544,9 +546,20 @@ func _request_json(endpoint: String, method: HTTPClient.Method, payload := {}, b
 
 		var completed: Array = await request_node.request_completed
 		request_node.queue_free()
+		var result := int(completed[0])
 		var response_code := int(completed[1])
 		var raw_body: PackedByteArray = completed[3]
 		var text := raw_body.get_string_from_utf8()
+
+		if result != HTTPRequest.RESULT_SUCCESS or response_code <= 0:
+			last_error = {
+				"ok": false,
+				"status": response_code,
+				"error": "Impossible de contacter le serveur.",
+				"network_error": true,
+				"base_url": base_url,
+			}
+			continue
 
 		var parsed := {}
 		if text != "":

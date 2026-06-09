@@ -14,6 +14,8 @@ func _ready():
 
 
 func _input(event):
+	if UIManager != null and UIManager.menu_open:
+		return
 	if event.is_action_pressed("ui_interact") and enter_hint_label.visible and not activePlayer:
 		_control_car()
 	elif event.is_action_pressed("ui_interact") and activePlayer:

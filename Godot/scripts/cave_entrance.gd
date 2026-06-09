@@ -12,7 +12,7 @@ func _ready():
 
 
 func _process(_delta):
-	if player_inside and Input.is_action_just_pressed("ui_interact"):  # 'interaction' = touche E
+	if player_inside and Input.is_action_just_pressed("ui_interact") and (UIManager == null or not UIManager.menu_open):  # 'interaction' = touche E
 		get_tree().change_scene_to_file(target_scene)
 
 

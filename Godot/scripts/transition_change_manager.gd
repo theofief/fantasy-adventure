@@ -14,6 +14,8 @@ var player_spawn_position = null
 
 func _ready() -> void:
 	color_rect.modulate.a = 0 
+	color_rect.visible = false
+	color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 func fade_out():
 	is_transitioning = true 
@@ -37,14 +39,15 @@ func fade_in():
 	tween.finished.connect(on_fade_in_finished)
 	
 func on_fade_in_finished():
+	color_rect.visible = false
 	is_transitioning = false 
 	Transition_done.emit()
 	
-func change_scene(next_scene_path: String):
+func change_scene(scene_path: String):
 	if is_transitioning:
 		return 
 		
-	self.next_scene_path = next_scene_path
+	next_scene_path = scene_path
 	fade_out()
 	
 	
