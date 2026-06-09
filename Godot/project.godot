@@ -24,6 +24,7 @@ DialogueManager="*uid://c3rodes2l3gxb"
 GlobalCoins="*uid://dodnsvwjj5tuy"
 GlobalHp="*uid://yj08d85ibl8m"
 UIManager="*uid://di8crk18nypkv"
+TransitionChangeManager="*uid://cgygqc5hrm02v"
 
 [dialogue_manager]
 
