@@ -7,9 +7,14 @@ extends Node2D
 @export var max_delay := 10
 
 var timer: Timer
+var _save_tick := 0.0
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if AuthManager != null:
+		AuthManager.apply_saved_game_state()
+		AuthManager.apply_saved_player_state_to_current_scene()
+		AuthManager.commit_scene_checkpoint()
 	randomize()
 	timer = Timer.new()
 	timer.one_shot = true
@@ -24,9 +29,18 @@ func _ready() -> void:
 		add_child(sc_node)
 
 
-func _enter_tree() -> void:
-	if AuthManager != null:
-		AuthManager.apply_saved_game_state()
+func _process(delta: float) -> void:
+	_save_tick += delta
+	if _save_tick < 1.0:
+		return
+	_save_tick = 0.0
+	if AuthManager != null and not AuthManager.is_applying_game_state():
+		AuthManager.commit_scene_checkpoint()
+
+
+func _exit_tree() -> void:
+	if AuthManager != null and not AuthManager.is_applying_game_state():
+		AuthManager.commit_scene_checkpoint()
 
 
 func start_timer() -> void:

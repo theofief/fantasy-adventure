@@ -125,6 +125,8 @@ func set_locale_code(locale_code: String) -> void:
 	TranslationServer.set_locale(_locale_code)
 	save_bindings(false, false)
 	emit_signal("locale_changed", _locale_code)
+	if AuthManager != null:
+		AuthManager.request_local_game_state_save()
 
 
 func get_auto_reconnect() -> bool:
@@ -135,6 +137,8 @@ func set_auto_reconnect(value: bool) -> void:
 	_auto_reconnect = bool(value)
 	# persist immediately
 	save_bindings(false, false)
+	if AuthManager != null:
+		AuthManager.request_local_game_state_save()
 
 
 func get_bindings_snapshot() -> Dictionary:
@@ -143,6 +147,28 @@ func get_bindings_snapshot() -> Dictionary:
 		"updatedAtUnixMs": _bindings_updated_at_unix_ms,
 		"updatedAtIso": _bindings_updated_at_iso,
 	}
+
+
+func get_settings_snapshot() -> Dictionary:
+	return {
+		"locale": _locale_code,
+		"autoReconnect": _auto_reconnect,
+	}
+
+
+func apply_settings_snapshot(settings_snapshot: Dictionary) -> void:
+	var locale := str(settings_snapshot.get("locale", _locale_code)).to_lower()
+	if locale == "":
+		locale = "en"
+
+	var locale_changed_now := locale != _locale_code
+	_locale_code = locale
+	_auto_reconnect = bool(settings_snapshot.get("autoReconnect", _auto_reconnect))
+	TranslationServer.set_locale(_locale_code)
+	save_bindings(false, false)
+
+	if locale_changed_now:
+		emit_signal("locale_changed", _locale_code)
 
 
 func apply_serialized_bindings(bindings: Dictionary, updated_at_unix_ms: int = 0, updated_at_iso: String = "") -> void:

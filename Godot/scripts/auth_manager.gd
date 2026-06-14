@@ -1,14 +1,21 @@
 extends Node
 
-const API_BASE_URLS := ["http://127.0.0.1:8099/api", "http://127.0.0.1:8000/api"]
+const DEFAULT_API_BASE_URLS := [
+	"http://192.168.1.22:8000/api",
+	"http://127.0.0.1:8099/api",
+	"http://127.0.0.1:8000/api",
+]
 const SESSION_FILE_PATH := "user://auth_session.cfg"
 const SERVER_RECONNECT_CHECK_SECONDS := 8.0
 const REQUEST_TIMEOUT_SECONDS := 5.0
+const SAVE_DEBOUNCE_SECONDS := 1.5
+const SAVE_SCHEMA_VERSION := 1
 
 var email: String = ""
 var password: String = ""
 var token: String = ""
 var user_profile: Dictionary = {}
+var custom_api_base_url: String = ""
 
 var _http_request: HTTPRequest
 var _pending_input_bindings: Dictionary = {}
@@ -18,7 +25,9 @@ var _is_syncing_profile_game_data: bool = false
 var _is_applying_game_state: bool = false
 var _is_refreshing_saved_session: bool = false
 var _reconnect_timer: Timer
+var _save_debounce_timer: Timer
 var _offline_restore_notification: String = ""
+var _pending_travel_scene_path: String = ""
 
 
 func _ready() -> void:
@@ -34,7 +43,17 @@ func _ready() -> void:
 	_reconnect_timer.autostart = should_autostart
 	add_child(_reconnect_timer)
 	_reconnect_timer.timeout.connect(_on_reconnect_timer_timeout)
+	_save_debounce_timer = Timer.new()
+	_save_debounce_timer.wait_time = SAVE_DEBOUNCE_SECONDS
+	_save_debounce_timer.one_shot = true
+	add_child(_save_debounce_timer)
+	_save_debounce_timer.timeout.connect(commit_local_game_state)
 	load_session()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		commit_local_game_state()
 
 
 func is_logged_in() -> bool:
@@ -59,6 +78,7 @@ func load_session() -> void:
 	email = str(config.get_value("auth", "email", ""))
 	password = str(config.get_value("auth", "password", ""))
 	token = str(config.get_value("auth", "token", ""))
+	custom_api_base_url = str(config.get_value("server", "custom_api_base_url", ""))
 	var profile_value: Variant = config.get_value("auth", "user_profile", {})
 	if typeof(profile_value) == TYPE_DICTIONARY:
 		user_profile = profile_value
@@ -84,8 +104,9 @@ func _try_restore_offline_backup() -> void:
 		var dict = parsed
 		if typeof(dict) == TYPE_OBJECT:
 			dict = dict as Dictionary
-			user_profile = dict.duplicate(true)
-			_offline_restore_notification = "Profil restauré depuis la sauvegarde hors-ligne"
+		if typeof(dict) == TYPE_DICTIONARY:
+			user_profile = (dict as Dictionary).duplicate(true)
+			_offline_restore_notification = "Profil restaure depuis la sauvegarde hors-ligne"
 			save_session()
 		return
 	# else ignore
@@ -97,7 +118,46 @@ func save_session() -> void:
 	config.set_value("auth", "password", password)
 	config.set_value("auth", "token", token)
 	config.set_value("auth", "user_profile", user_profile)
+	config.set_value("server", "custom_api_base_url", custom_api_base_url)
 	config.save(SESSION_FILE_PATH)
+
+
+func get_primary_api_base_url() -> String:
+	if custom_api_base_url != "":
+		return custom_api_base_url
+	return DEFAULT_API_BASE_URLS[0]
+
+
+func set_custom_api_base_url(raw_url: String) -> void:
+	custom_api_base_url = _normalize_api_base_url(raw_url)
+	save_session()
+
+
+func reset_custom_api_base_url() -> void:
+	custom_api_base_url = ""
+	save_session()
+
+
+func _get_api_base_urls() -> Array[String]:
+	var urls: Array[String] = []
+	if custom_api_base_url != "":
+		urls.append(custom_api_base_url)
+	for url in DEFAULT_API_BASE_URLS:
+		if not urls.has(url):
+			urls.append(url)
+	return urls
+
+
+func _normalize_api_base_url(raw_url: String) -> String:
+	var url := raw_url.strip_edges()
+	if url == "":
+		return ""
+	if not url.begins_with("http://") and not url.begins_with("https://"):
+		url = "http://" + url
+	url = url.trim_suffix("/")
+	if not url.ends_with("/api"):
+		url += "/api"
+	return url
 
 
 func clear_session() -> void:
@@ -144,6 +204,7 @@ func async_login(input_email: String, input_password: String) -> Dictionary:
 	_apply_user_profile(resolved_profile)
 	save_session()
 	_write_offline_backup()
+	_sync_settings_after_auth()
 	await _sync_bindings_after_auth()
 	await _sync_pending_profile_game_data_async()
 
@@ -166,6 +227,7 @@ func async_register(payload: Dictionary) -> Dictionary:
 	_apply_user_profile(resolved_profile)
 	save_session()
 	_write_offline_backup()
+	_sync_settings_after_auth()
 	await _sync_bindings_after_auth()
 	await _sync_pending_profile_game_data_async()
 
@@ -205,8 +267,141 @@ func apply_saved_game_state() -> void:
 	_is_applying_game_state = false
 
 
+func apply_saved_player_state_to_current_scene() -> void:
+	var game_data: Variant = user_profile.get("gameData", {})
+	if typeof(game_data) != TYPE_DICTIONARY:
+		return
+
+	var game_data_dict := game_data as Dictionary
+	var current_scene := get_tree().current_scene
+	if current_scene == null:
+		return
+
+	var current_scene_path := current_scene.scene_file_path
+	var player_state: Variant = game_data_dict.get("playerState", {})
+	if typeof(player_state) != TYPE_DICTIONARY:
+		player_state = {}
+
+	var player_state_dict := player_state as Dictionary
+	var saved_scene_path := str(player_state_dict.get("scenePath", ""))
+	if saved_scene_path != "" and current_scene_path != "" and saved_scene_path != current_scene_path:
+		var scene_states: Variant = game_data_dict.get("scenePlayerStates", {})
+		if typeof(scene_states) != TYPE_DICTIONARY:
+			return
+		var scene_state: Variant = (scene_states as Dictionary).get(current_scene_path, {})
+		if typeof(scene_state) != TYPE_DICTIONARY:
+			return
+		player_state_dict = scene_state as Dictionary
+
+	var position_value: Variant = player_state_dict.get("position", {})
+	if typeof(position_value) != TYPE_DICTIONARY:
+		return
+
+	var position_dict := position_value as Dictionary
+	var player_node := _find_current_player_body()
+	if player_node == null:
+		return
+
+	player_node.global_position = Vector2(
+		float(position_dict.get("x", player_node.global_position.x)),
+		float(position_dict.get("y", player_node.global_position.y))
+	)
+
+	var last_direction_value: Variant = player_state_dict.get("lastDirection", {})
+	if typeof(last_direction_value) == TYPE_DICTIONARY and _object_has_property(player_node, "last_direction"):
+		var last_direction_dict := last_direction_value as Dictionary
+		player_node.set("last_direction", Vector2(
+			float(last_direction_dict.get("x", 0.0)),
+			float(last_direction_dict.get("y", 1.0))
+		))
+
+
 func commit_local_game_state() -> void:
 	var game_data := _build_game_data_snapshot()
+	_set_profile_game_data(game_data)
+	if is_logged_in():
+		queue_profile_game_data_sync(game_data)
+
+
+func commit_scene_checkpoint() -> void:
+	if _is_applying_game_state:
+		return
+	commit_local_game_state()
+
+
+func request_local_game_state_save() -> void:
+	if _is_applying_game_state:
+		return
+	if _save_debounce_timer == null:
+		commit_local_game_state()
+		return
+	_save_debounce_timer.start()
+
+
+func get_current_game_data_snapshot() -> Dictionary:
+	return _get_current_game_data()
+
+
+func prepare_scene_travel(scene_path: String) -> void:
+	if scene_path == "":
+		return
+
+	var game_data := _get_current_game_data()
+	var scene_states: Variant = game_data.get("scenePlayerStates", {})
+	if typeof(scene_states) == TYPE_DICTIONARY:
+		var scene_state: Variant = (scene_states as Dictionary).get(scene_path, {})
+		if typeof(scene_state) == TYPE_DICTIONARY:
+			game_data["playerState"] = (scene_state as Dictionary).duplicate(true)
+		else:
+			game_data["playerState"] = {
+				"scenePath": scene_path,
+				"position": {},
+				"lastDirection": {
+					"x": 0,
+					"y": 1,
+				},
+			}
+	else:
+		game_data["playerState"] = {
+			"scenePath": scene_path,
+			"position": {},
+			"lastDirection": {
+				"x": 0,
+				"y": 1,
+			},
+		}
+
+	game_data["saveMeta"] = _create_save_meta()
+	_pending_travel_scene_path = scene_path
+	_set_profile_game_data(game_data)
+	if is_logged_in():
+		queue_profile_game_data_sync(game_data)
+
+
+func get_resume_scene_path(default_scene_path: String) -> String:
+	var game_data := _get_current_game_data()
+	var player_state: Variant = game_data.get("playerState", {})
+	if typeof(player_state) != TYPE_DICTIONARY:
+		return default_scene_path
+
+	var scene_path := str((player_state as Dictionary).get("scenePath", ""))
+	if scene_path == "" or not ResourceLoader.exists(scene_path) or not _is_playable_resume_scene(scene_path):
+		return default_scene_path
+
+	return scene_path
+
+
+func fallback_to_default_scene(default_scene_path: String) -> void:
+	var game_data := _get_current_game_data()
+	game_data["playerState"] = {
+		"scenePath": default_scene_path,
+		"position": {},
+		"lastDirection": {
+			"x": 0,
+			"y": 1,
+		},
+	}
+	game_data["saveMeta"] = _create_save_meta()
 	_set_profile_game_data(game_data)
 	if is_logged_in():
 		queue_profile_game_data_sync(game_data)
@@ -296,6 +491,7 @@ func _refresh_saved_session_from_server() -> bool:
 	_apply_user_profile(resolved_profile)
 	save_session()
 	_write_offline_backup()
+	_sync_settings_after_auth()
 	_sync_bindings_after_auth()
 	await _sync_pending_profile_game_data_async()
 	_is_refreshing_saved_session = false
@@ -330,6 +526,20 @@ func _sync_bindings_after_auth() -> void:
 	queue_input_bindings_sync(local_snapshot)
 
 
+func _sync_settings_after_auth() -> void:
+	if SettingsManager == null:
+		return
+
+	var current_game_data := _get_current_game_data()
+	var remote_settings: Variant = current_game_data.get("settings", {})
+	if typeof(remote_settings) == TYPE_DICTIONARY and not (remote_settings as Dictionary).is_empty():
+		if SettingsManager.has_method("apply_settings_snapshot"):
+			SettingsManager.apply_settings_snapshot(remote_settings as Dictionary)
+		return
+
+	request_local_game_state_save()
+
+
 func _apply_user_profile(profile: Variant) -> void:
 	if typeof(profile) == TYPE_DICTIONARY:
 		user_profile = profile
@@ -342,6 +552,22 @@ func _build_game_data_snapshot(bindings_snapshot: Dictionary = {}) -> Dictionary
 		game_data = (existing_game_data as Dictionary).duplicate(true)
 
 	game_data["worldState"] = _capture_world_state()
+	var captured_player_state := _capture_player_state(game_data)
+	game_data["scenePlayerStates"] = _capture_scene_player_states(game_data, captured_player_state)
+	var captured_scene_path := str(captured_player_state.get("scenePath", ""))
+	if _pending_travel_scene_path != "" and captured_scene_path != _pending_travel_scene_path:
+		var existing_player_state: Variant = game_data.get("playerState", {})
+		if typeof(existing_player_state) == TYPE_DICTIONARY:
+			game_data["playerState"] = (existing_player_state as Dictionary).duplicate(true)
+		else:
+			game_data["playerState"] = captured_player_state
+	elif not captured_player_state.is_empty():
+		game_data["playerState"] = captured_player_state
+		if _pending_travel_scene_path != "" and captured_scene_path == _pending_travel_scene_path:
+			_pending_travel_scene_path = ""
+	game_data["settings"] = _capture_settings_state()
+	game_data["inventory"] = _capture_inventory_state()
+	game_data["progression"] = _capture_progression_state()
 	game_data["saveMeta"] = _create_save_meta()
 
 	if not bindings_snapshot.is_empty():
@@ -362,6 +588,65 @@ func _build_game_data_snapshot(bindings_snapshot: Dictionary = {}) -> Dictionary
 	return game_data
 
 
+func is_next_world_unlocked() -> bool:
+	var game_data := _get_current_game_data()
+	var progression: Variant = game_data.get("progression", {})
+	var flags: Dictionary = {}
+
+	if typeof(progression) == TYPE_DICTIONARY:
+		var progression_flags: Variant = (progression as Dictionary).get("flags", {})
+		if typeof(progression_flags) == TYPE_DICTIONARY:
+			flags = progression_flags as Dictionary
+
+	if bool(flags.get("nextWorldUnlocked", false)):
+		return true
+
+	var saved_slimes := int(flags.get("starterDialogueSlimesKilled", 0))
+	var world_state: Variant = game_data.get("worldState", {})
+	if typeof(world_state) == TYPE_DICTIONARY:
+		saved_slimes = max(saved_slimes, int((world_state as Dictionary).get("slimesKilled", 0)))
+
+	if DialogueVariables != null:
+		saved_slimes = max(saved_slimes, int(DialogueVariables.slimes_killed))
+
+	return saved_slimes >= 5
+
+
+func unlock_next_world_from_npc() -> void:
+	var game_data := _get_current_game_data()
+	var progression: Dictionary = {}
+	var existing_progression: Variant = game_data.get("progression", {})
+	if typeof(existing_progression) == TYPE_DICTIONARY:
+		progression = (existing_progression as Dictionary).duplicate(true)
+
+	var flags: Dictionary = {}
+	var existing_flags: Variant = progression.get("flags", {})
+	if typeof(existing_flags) == TYPE_DICTIONARY:
+		flags = (existing_flags as Dictionary).duplicate(true)
+
+	var slimes_killed := int(flags.get("starterDialogueSlimesKilled", 0))
+	var world_state: Variant = game_data.get("worldState", {})
+	if typeof(world_state) == TYPE_DICTIONARY:
+		slimes_killed = max(slimes_killed, int((world_state as Dictionary).get("slimesKilled", 0)))
+	if DialogueVariables != null:
+		slimes_killed = max(slimes_killed, int(DialogueVariables.slimes_killed))
+
+	flags["starterDialogueSlimesKilled"] = slimes_killed
+	flags["slimesObjectiveCompleted"] = true
+	flags["starterNpcReported"] = true
+	flags["nextWorldUnlocked"] = true
+	flags["nextWorldScenePath"] = "res://scenes/node_2d.tscn"
+
+	progression["currentQuest"] = "go_to_next_island"
+	progression["flags"] = flags
+	game_data["progression"] = progression
+	game_data["saveMeta"] = _create_save_meta()
+
+	_set_profile_game_data(game_data)
+	if is_logged_in():
+		queue_profile_game_data_sync(game_data)
+
+
 func _get_current_game_data() -> Dictionary:
 	var existing_game_data: Variant = user_profile.get("gameData", {})
 	if typeof(existing_game_data) == TYPE_DICTIONARY:
@@ -374,12 +659,16 @@ func _set_profile_game_data(game_data: Dictionary) -> void:
 		user_profile = {}
 	user_profile["gameData"] = game_data
 	save_session()
+	_write_offline_backup()
 
 
 func _capture_world_state() -> Dictionary:
 	var dead_enemies: Dictionary = {}
+	var enemy_states: Dictionary = {}
 	if GlobalEnemyStates != null and typeof(GlobalEnemyStates.dead_enemies) == TYPE_DICTIONARY:
 		dead_enemies = GlobalEnemyStates.dead_enemies.duplicate(true)
+	if GlobalEnemyStates != null and typeof(GlobalEnemyStates.enemy_states) == TYPE_DICTIONARY:
+		enemy_states = GlobalEnemyStates.enemy_states.duplicate(true)
 
 	return {
 		"coins": int(GlobalCoins.coins) if GlobalCoins != null else 0,
@@ -387,11 +676,13 @@ func _capture_world_state() -> Dictionary:
 		"maxHp": int(GlobalHp.max_hp) if GlobalHp != null else 0,
 		"slimesKilled": int(DialogueVariables.slimes_killed) if DialogueVariables != null else 0,
 		"deadEnemies": dead_enemies,
+		"enemyStates": enemy_states,
 	}
 
 
 func _apply_game_data(game_data: Dictionary) -> void:
 	_apply_world_state(game_data.get("worldState", {}))
+	_apply_settings_state(game_data.get("settings", {}))
 	_apply_input_bindings_from_game_data(game_data)
 
 
@@ -418,6 +709,9 @@ func _apply_world_state(world_state: Variant) -> void:
 		var dead_enemies: Variant = world_state_dict.get("deadEnemies", {})
 		if typeof(dead_enemies) == TYPE_DICTIONARY:
 			GlobalEnemyStates.dead_enemies = (dead_enemies as Dictionary).duplicate(true)
+		var enemy_states: Variant = world_state_dict.get("enemyStates", {})
+		if typeof(enemy_states) == TYPE_DICTIONARY:
+			GlobalEnemyStates.enemy_states = (enemy_states as Dictionary).duplicate(true)
 
 
 func _apply_input_bindings_from_game_data(game_data: Dictionary) -> void:
@@ -432,6 +726,166 @@ func _apply_input_bindings_from_game_data(game_data: Dictionary) -> void:
 			int(snapshot.get("updatedAtUnixMs", 0)),
 			str(snapshot.get("updatedAtIso", ""))
 		)
+
+
+func _capture_player_state(existing_game_data: Dictionary = {}) -> Dictionary:
+	var current_scene := get_tree().current_scene
+	var scene_path := ""
+	if current_scene != null:
+		scene_path = current_scene.scene_file_path
+
+	var player_node := _find_current_player_body()
+	if player_node == null:
+		var previous_player_state: Variant = existing_game_data.get("playerState", {})
+		if typeof(previous_player_state) == TYPE_DICTIONARY:
+			return (previous_player_state as Dictionary).duplicate(true)
+		return {}
+
+	var position := Vector2.ZERO
+	var last_direction := Vector2.DOWN
+	position = player_node.global_position
+	var player_last_direction: Variant = player_node.get("last_direction")
+	if typeof(player_last_direction) == TYPE_VECTOR2:
+		last_direction = player_last_direction
+
+	return {
+		"scenePath": scene_path,
+		"position": {
+			"x": position.x,
+			"y": position.y,
+		},
+		"lastDirection": {
+			"x": last_direction.x,
+			"y": last_direction.y,
+		},
+	}
+
+
+func _capture_scene_player_states(existing_game_data: Dictionary, player_state: Dictionary) -> Dictionary:
+	var scene_states: Dictionary = {}
+	var existing_scene_states: Variant = existing_game_data.get("scenePlayerStates", {})
+	if typeof(existing_scene_states) == TYPE_DICTIONARY:
+		scene_states = (existing_scene_states as Dictionary).duplicate(true)
+
+	var scene_path := str(player_state.get("scenePath", ""))
+	var position_value: Variant = player_state.get("position", {})
+	if scene_path != "" and typeof(position_value) == TYPE_DICTIONARY and not (position_value as Dictionary).is_empty():
+		scene_states[scene_path] = player_state.duplicate(true)
+
+	return scene_states
+
+
+func _capture_settings_state() -> Dictionary:
+	return {
+		"locale": SettingsManager.get_locale_code() if SettingsManager != null and SettingsManager.has_method("get_locale_code") else TranslationServer.get_locale(),
+		"autoReconnect": SettingsManager.get_auto_reconnect() if SettingsManager != null and SettingsManager.has_method("get_auto_reconnect") else true,
+	}
+
+
+func _capture_inventory_state() -> Dictionary:
+	var inventory_node := _find_inventory_node()
+	if inventory_node == null:
+		return {}
+
+	var item_names: Array = []
+	var inventory_items: Variant = inventory_node.get("items")
+	if typeof(inventory_items) == TYPE_ARRAY:
+		for item in inventory_items:
+			if typeof(item) == TYPE_DICTIONARY:
+				item_names.append(str((item as Dictionary).get("name", "")))
+
+	return {
+		"selectedSlot": int(inventory_node.get("selected_slot")),
+		"selectedHeldSlot": int(inventory_node.get("selected_held_slot")),
+		"items": item_names,
+	}
+
+
+func _capture_progression_state() -> Dictionary:
+	var existing_game_data := _get_current_game_data()
+	var progression: Dictionary = {}
+	var existing_progression: Variant = existing_game_data.get("progression", {})
+	if typeof(existing_progression) == TYPE_DICTIONARY:
+		progression = (existing_progression as Dictionary).duplicate(true)
+
+	var flags: Dictionary = {}
+	var existing_flags: Variant = progression.get("flags", {})
+	if typeof(existing_flags) == TYPE_DICTIONARY:
+		flags = (existing_flags as Dictionary).duplicate(true)
+
+	var slimes_killed := int(DialogueVariables.slimes_killed) if DialogueVariables != null else int(flags.get("starterDialogueSlimesKilled", 0))
+	flags["starterDialogueSlimesKilled"] = slimes_killed
+	if slimes_killed >= 5:
+		flags["slimesObjectiveCompleted"] = true
+		if bool(flags.get("starterNpcReported", false)) or bool(flags.get("nextWorldUnlocked", false)):
+			flags["nextWorldUnlocked"] = true
+			flags["nextWorldScenePath"] = "res://scenes/node_2d.tscn"
+
+	var current_quest := str(progression.get("currentQuest", "starter"))
+	if current_quest == "" or (current_quest == "starter" and bool(flags.get("nextWorldUnlocked", false))):
+		current_quest = "go_to_next_island"
+
+	return {
+		"currentQuest": current_quest,
+		"flags": flags,
+	}
+
+
+func _apply_settings_state(settings_state: Variant) -> void:
+	if SettingsManager == null or typeof(settings_state) != TYPE_DICTIONARY:
+		return
+
+	var settings_dict := settings_state as Dictionary
+	if SettingsManager.has_method("apply_settings_snapshot"):
+		SettingsManager.apply_settings_snapshot(settings_dict)
+
+
+func _find_current_player_body() -> Node2D:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return null
+
+	var direct := scene.get_node_or_null("player/CharacterBody2D")
+	if direct is Node2D:
+		return direct
+
+	var player := scene.get_node_or_null("player")
+	if player is Node2D:
+		return player
+
+	var found := scene.find_child("CharacterBody2D", true, false)
+	if found is Node2D:
+		return found
+
+	return null
+
+
+func _find_inventory_node() -> Node:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return null
+	return scene.find_child("InventoryUI", true, false)
+
+
+func _object_has_property(target: Object, property_name: String) -> bool:
+	if target == null:
+		return false
+	for property in target.get_property_list():
+		if str(property.get("name", "")) == property_name:
+			return true
+	return false
+
+
+func _is_playable_resume_scene(scene_path: String) -> bool:
+	if scene_path == "res://scenes/main_menu.tscn":
+		return false
+	if scene_path == "res://scenes/login_menu.tscn":
+		return false
+	if scene_path == "res://scenes/startup.tscn":
+		return false
+	if scene_path == "res://scenes/settings_menu.tscn":
+		return false
+	return true
 
 
 func _extract_input_bindings_snapshot_from_game_data(game_data: Dictionary) -> Dictionary:
@@ -455,6 +909,7 @@ func _extract_input_bindings_snapshot_from_game_data(game_data: Dictionary) -> D
 
 func _create_save_meta() -> Dictionary:
 	return {
+		"schemaVersion": SAVE_SCHEMA_VERSION,
 		"updatedAtUnixMs": int(Time.get_unix_time_from_system() * 1000.0),
 		"updatedAtIso": Time.get_datetime_string_from_system(true),
 	}
@@ -533,7 +988,7 @@ func _request_json(endpoint: String, method: HTTPClient.Method, payload := {}, b
 	}
 
 	# try each base URL in order until one succeeds or all fail
-	for base_url in API_BASE_URLS:
+	for base_url in _get_api_base_urls():
 		var url: String = str(base_url) + str(endpoint)
 		var request_node := HTTPRequest.new()
 		request_node.timeout = REQUEST_TIMEOUT_SECONDS

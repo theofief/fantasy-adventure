@@ -59,7 +59,7 @@ class AuthController extends AbstractController
             ->setPrenom((string) $payload['prenom'])
             ->setDateNaissance($dateNaissance)
             ->setPseudo((string) $payload['pseudo'])
-            ->setGameData(is_array($payload['gameData'] ?? null) ? $payload['gameData'] : []);
+            ->setGameData(is_array($payload['gameData'] ?? null) ? $this->normalizeGameData($payload['gameData']) : $this->normalizeGameData([]));
 
         $user->setPassword($passwordHasher->hashPassword($user, (string) $payload['password']));
         $user->setApiToken(bin2hex(random_bytes(32)));
@@ -142,10 +142,39 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Le champ gameData (JSON objet/tableau) est requis.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        $user->setGameData($payload['gameData']);
+        $user->setGameData($this->normalizeGameData($payload['gameData']));
         $entityManager->flush();
 
         return $this->json(['message' => 'Sauvegarde mise a jour.', 'gameData' => $user->getGameData()]);
+    }
+
+    #[Route('/save', name: 'api_save_patch', methods: ['PATCH'])]
+    public function patchSave(
+        Request $request,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+    ): JsonResponse {
+        $user = $this->getUserFromToken($request, $userRepository);
+        if ($user === null) {
+            return $this->json(['error' => 'Token invalide ou manquant.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        try {
+            /** @var array<string, mixed> $payload */
+            $payload = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return $this->json(['error' => 'JSON invalide.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        if (!isset($payload['gameData']) || !is_array($payload['gameData'])) {
+            return $this->json(['error' => 'Le champ gameData (JSON objet/tableau) est requis.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $mergedGameData = array_replace_recursive($user->getGameData(), $payload['gameData']);
+        $user->setGameData($this->normalizeGameData($mergedGameData));
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Sauvegarde fusionnee.', 'gameData' => $user->getGameData()]);
     }
 
     private function getUserFromToken(Request $request, UserRepository $userRepository): ?User
@@ -178,5 +207,26 @@ class AuthController extends AbstractController
             'admin' => $user->isAdmin(),
             'gameData' => $user->getGameData(),
         ];
+    }
+
+    /**
+     * @param array<mixed> $gameData
+     *
+     * @return array<mixed>
+     */
+    private function normalizeGameData(array $gameData): array
+    {
+        $normalized = $gameData;
+        $saveMeta = $normalized['saveMeta'] ?? [];
+        if (!is_array($saveMeta)) {
+            $saveMeta = [];
+        }
+
+        $now = new DateTimeImmutable();
+        $saveMeta['serverUpdatedAtIso'] = $now->format(DateTimeInterface::ATOM);
+        $saveMeta['schemaVersion'] = (int) ($saveMeta['schemaVersion'] ?? 1);
+        $normalized['saveMeta'] = $saveMeta;
+
+        return $normalized;
     }
 }

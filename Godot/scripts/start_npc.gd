@@ -9,6 +9,7 @@ extends Area2D
 var player_inside := false
 var dialogue_active := false
 var current_balloon : Node = null
+var _dialogue_unlocks_next_world := false
 
 func _ready():
 	hint_label.text = tr("Press \"E\"")
@@ -28,7 +29,7 @@ func _process(_delta):
 	
 	# 🔥 ESC = vraie fin de dialogue
 	if dialogue_active and Input.is_action_just_pressed("ui_cancel"):
-		end_dialogue_properly()
+		end_dialogue_properly(false)
 
 func _on_body_entered(body: Node) -> void:
 	if body.name == "player" or (body.get_parent() and body.get_parent().name == "player"):
@@ -55,8 +56,10 @@ func start_dialogue():
 
 	# Sélectionner le dialogue selon le nombre de slimes tués
 	var dialogue_to_play = dialogue_start
+	_dialogue_unlocks_next_world = false
 	if DialogueVariables.slimes_killed >= 5:
 		dialogue_to_play = "end_first_island"
+		_dialogue_unlocks_next_world = true
 		print("🎯 5 slimes tués détecté - Dialogue: end_first_island")
 	else:
 		print("📜 Dialogue: start (%d slimes tués)" % DialogueVariables.slimes_killed)
@@ -67,7 +70,7 @@ func start_dialogue():
 		DialogueManager.dialogue_ended.connect(Callable(self, "_on_dialogue_ended"))
 
 # 🔥 fonction centrale (LA clé)
-func end_dialogue_properly():
+func end_dialogue_properly(completed := false):
 	if not dialogue_active:
 		return
 	
@@ -93,8 +96,13 @@ func end_dialogue_properly():
 	if DialogueManager.dialogue_ended.is_connected(Callable(self, "_on_dialogue_ended")):
 		DialogueManager.dialogue_ended.disconnect(Callable(self, "_on_dialogue_ended"))
 
+	if completed and _dialogue_unlocks_next_world and AuthManager != null and AuthManager.has_method("unlock_next_world_from_npc"):
+		AuthManager.unlock_next_world_from_npc()
+
+	_dialogue_unlocks_next_world = false
+
 func _on_dialogue_ended(_res : DialogueResource) -> void:
-	end_dialogue_properly()
+	end_dialogue_properly(true)
 
 
 func _on_locale_changed(_locale_code: String) -> void:

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fantasy Adventure</title>
+  <title>Fantasy Adventure - RPG Pixel Art</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -126,15 +126,56 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      background: url('background-image.png') center center / cover no-repeat;
+      isolation: isolate;
+      overflow: hidden;
       text-align: center;
       padding: 120px 24px 80px;
+      --hero-parallax-y: 0px;
+      --hero-mouse-x: 0px;
+      --hero-mouse-y: 0px;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: -9vh -8vw;
+      z-index: -2;
+      background: url('background-image.png') center center / cover no-repeat;
+      transform:
+        translate3d(var(--hero-mouse-x), calc(var(--hero-parallax-y) + var(--hero-mouse-y)), 0)
+        scale(1.08);
+      filter: saturate(1.12) contrast(1.04);
+      will-change: transform;
+      animation: heroDrift 16s ease-in-out infinite alternate;
+    }
+
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 22% 24%, rgba(247,217,76,.20), transparent 18%),
+        radial-gradient(circle at 78% 18%, rgba(94,207,232,.18), transparent 22%),
+        linear-gradient(115deg, transparent 0%, rgba(255,255,255,.10) 48%, transparent 56%);
+      mix-blend-mode: screen;
+      opacity: .55;
+      animation: heroGlimmer 6s ease-in-out infinite;
+    }
+
+    @keyframes heroDrift {
+      from { background-position: 48% 48%; }
+      to { background-position: 52% 54%; }
+    }
+
+    @keyframes heroGlimmer {
+      0%, 100% { opacity: .38; transform: translateX(-2%); }
+      50% { opacity: .68; transform: translateX(2%); }
     }
 
     .hero::before {
       content: '';
       position: absolute;
       inset: 0;
+      z-index: -1;
       background: linear-gradient(to bottom,
         rgba(26,26,46,.18) 0%,
         rgba(26,26,46,.05) 40%,
@@ -230,6 +271,18 @@
       display: flex; flex-direction: column; align-items: center; gap: 6px;
       opacity: .7;
       animation: bounce 2s infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-bg,
+      .hero-bg::after,
+      .hero-badge,
+      .scroll-hint {
+        animation: none;
+      }
+      .hero-bg {
+        transform: scale(1.04);
+      }
     }
     .scroll-hint span { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
     .scroll-hint i { font-size: 18px; }
@@ -378,12 +431,12 @@
 <body>
 
 <nav id="navbar">
-  <div class="nav-logo">⚔ Fantasy</div>
+  <div class="nav-logo">⚔ Fantasy Adventure</div>
   <ul class="nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#stats">World</a></li>
-    <li><a href="#cta">Play</a></li>
-    <li><a href="#footer">Community</a></li>
+    <li><a href="#features">Jeu</a></li>
+    <li><a href="#stats">Monde</a></li>
+    <li><a href="#cta">Jouer</a></li>
+    <li><a href="/admin">Admin</a></li>
   </ul>
   <button class="burger" id="burger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -391,20 +444,21 @@
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#features" class="mobile-link">Features</a>
-  <a href="#stats"    class="mobile-link">World</a>
-  <a href="#cta"      class="mobile-link">Play</a>
-  <a href="#footer"   class="mobile-link">Community</a>
+  <a href="#features" class="mobile-link">Jeu</a>
+  <a href="#stats"    class="mobile-link">Monde</a>
+  <a href="#cta"      class="mobile-link">Jouer</a>
+  <a href="/admin"    class="mobile-link">Admin</a>
 </div>
 
 <section class="hero" id="home">
+  <div class="hero-bg" aria-hidden="true"></div>
   <div class="hero-content">
-    <div class="hero-badge">✦ Now Available ✦</div>
+    <div class="hero-badge">✦ RPG Pixel Art en développement ✦</div>
     <h1 class="hero-title">Fantasy<br>Adventure</h1>
-    <p class="hero-sub">Embark on an epic journey through mystical realms.<br>Battle fierce enemies, forge alliances, and shape your destiny.</p>
+    <p class="hero-sub">Explore des îles en pixel art, bats les slimes de la première zone,<br>débloque la ville aux maisons et garde ta progression grâce à la sauvegarde.</p>
     <div class="hero-btns">
-      <a href="#" class="btn btn-primary">▶ Play Now</a>
-      <a href="#" class="btn btn-secondary">↓ Download</a>
+      <a href="#cta" class="btn btn-primary">▶ Jouer</a>
+      <a href="/admin" class="btn btn-secondary">⚙ Panel Admin</a>
     </div>
   </div>
   <div class="scroll-hint">
@@ -415,28 +469,28 @@
 
 
 <section id="features" style="background:#12122a; text-align:center;">
-  <p class="section-label">What Awaits You</p>
-  <h2 class="section-title">An Unforgettable World</h2>
+  <p class="section-label">Ce qui est deja jouable</p>
+  <h2 class="section-title">Un monde RPG qui grandit scene par scene</h2>
   <div class="features-grid">
     <div class="feature-card">
       <span class="feature-icon">🗺️</span>
-      <h3>Open World</h3>
-      <p>Explore a vast pixel-art world filled with hidden dungeons, ancient ruins, and vibrant kingdoms.</p>
+      <h3>Exploration</h3>
+      <p>Parcours l'ile de depart, puis debloque une deuxieme ile avec une ville, des maisons et des points d'interaction.</p>
     </div>
     <div class="feature-card">
       <span class="feature-icon">⚔️</span>
-      <h3>Epic Combat</h3>
-      <p>Master a deep skill-based combat system. Chain combos, unleash magic, and defeat legendary bosses.</p>
+      <h3>Combat</h3>
+      <p>Affronte les slimes avec ton epee, fais avancer la quete du PNJ et conserve les ennemis deja vaincus.</p>
     </div>
     <div class="feature-card">
       <span class="feature-icon">🧙</span>
-      <h3>Class System</h3>
-      <p>Choose from 12 unique classes — Warrior, Mage, Ranger, and more — each with branching skill trees.</p>
+      <h3>Inventaire</h3>
+      <p>Ouvre l'inventaire, selectionne des objets, consulte leurs descriptions et garde l'objet equipe en main.</p>
     </div>
     <div class="feature-card">
       <span class="feature-icon">🤝</span>
-      <h3>Co-op Multiplayer</h3>
-      <p>Team up with friends in real-time. Form guilds, conquer raids, and compete in PvP arenas.</p>
+      <h3>Sauvegarde</h3>
+      <p>La position, les touches, les vies, les pieces, l'inventaire, les slimes et la progression sont sauvegardes.</p>
     </div>
   </div>
 </section>
@@ -445,20 +499,20 @@
 <section class="stats-section" id="stats">
   <div class="stats-grid">
     <div class="stat">
-      <span class="stat-num" data-target="2000000">0</span>
-      <span class="stat-label">Players Worldwide</span>
+      <span class="stat-num" data-target="2">0</span>
+      <span class="stat-label">Iles jouables</span>
     </div>
     <div class="stat">
-      <span class="stat-num" data-target="500">0</span>
-      <span class="stat-label">Quests</span>
+      <span class="stat-num" data-target="5">0</span>
+      <span class="stat-label">Slimes de quete</span>
     </div>
     <div class="stat">
-      <span class="stat-num" data-target="12">0</span>
-      <span class="stat-label">Unique Classes</span>
+      <span class="stat-num" data-target="6">0</span>
+      <span class="stat-label">Objets d'inventaire</span>
     </div>
     <div class="stat">
-      <span class="stat-num" data-target="98">0</span>
-      <span class="stat-label">% Player Rating</span>
+      <span class="stat-num" data-target="4">0</span>
+      <span class="stat-label">Maisons visitables</span>
     </div>
   </div>
 </section>
@@ -466,12 +520,12 @@
 
 <section class="cta-section" id="cta">
   <div class="cta-content">
-    <p class="section-label">Begin Your Quest</p>
-    <h2 class="section-title">Your Legend Starts Today</h2>
-    <p>Free to play. No download required. Jump into the adventure in seconds — across all devices.</p>
+    <p class="section-label">Commencer l'aventure</p>
+    <h2 class="section-title">Connecte-toi et reprends ta sauvegarde</h2>
+    <p>Lance le serveur, ouvre le jeu, connecte ton compte et continue depuis ta derniere scene sauvegardee.</p>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-      <a href="#" class="btn btn-primary">▶ Play Free Now</a>
-      <a href="#" class="btn btn-secondary">↓ Download App</a>
+      <a href="#home" class="btn btn-primary">▶ Retour au jeu</a>
+      <a href="/admin" class="btn btn-secondary">⚙ Gerer les joueurs</a>
     </div>
   </div>
 </section>
@@ -486,7 +540,7 @@
     <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
     <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
   </div>
-  <p class="footer-copy">© 2026 Fantasy Adventure. All rights reserved.</p>
+  <p class="footer-copy">© 2026 Fantasy Adventure. Projet RPG pixel art avec back Symfony et jeu Godot.</p>
 </footer>
 
 <script>
@@ -495,6 +549,49 @@
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 60);
   });
+
+  const hero = document.querySelector('.hero');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let heroMouseX = 0;
+  let heroMouseY = 0;
+  let parallaxTicking = false;
+
+  function updateHeroParallax() {
+    if (!hero || reduceMotion.matches) return;
+    const rect = hero.getBoundingClientRect();
+    const visible = rect.bottom > 0 && rect.top < window.innerHeight;
+    if (!visible) return;
+
+    const scrollProgress = Math.max(-1, Math.min(1, -rect.top / Math.max(rect.height, 1)));
+    hero.style.setProperty('--hero-parallax-y', `${scrollProgress * 38}px`);
+    hero.style.setProperty('--hero-mouse-x', `${heroMouseX}px`);
+    hero.style.setProperty('--hero-mouse-y', `${heroMouseY}px`);
+  }
+
+  function requestHeroParallax() {
+    if (parallaxTicking) return;
+    parallaxTicking = true;
+    requestAnimationFrame(() => {
+      updateHeroParallax();
+      parallaxTicking = false;
+    });
+  }
+
+  window.addEventListener('scroll', requestHeroParallax, { passive: true });
+  window.addEventListener('resize', requestHeroParallax);
+  hero?.addEventListener('mousemove', (event) => {
+    if (reduceMotion.matches) return;
+    const rect = hero.getBoundingClientRect();
+    heroMouseX = ((event.clientX - rect.left) / rect.width - 0.5) * -18;
+    heroMouseY = ((event.clientY - rect.top) / rect.height - 0.5) * -12;
+    requestHeroParallax();
+  });
+  hero?.addEventListener('mouseleave', () => {
+    heroMouseX = 0;
+    heroMouseY = 0;
+    requestHeroParallax();
+  });
+  requestHeroParallax();
 
   
   const burger = document.getElementById('burger');

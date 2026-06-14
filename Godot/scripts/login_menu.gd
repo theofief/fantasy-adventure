@@ -19,6 +19,7 @@ const MAIN_MENU_SCENE := "res://scenes/main_menu.tscn"
 const OFFLINE_SETUP_SCENE := preload("res://scenes/offline_setup.tscn")
 var _offline_setup_instance = null
 @onready var MenuContainer: MarginContainer = $MarginContainer
+@onready var form_container: VBoxContainer = $MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer
 
 @onready var server_status_label: Label = $MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer/ServerStatusLabel
 @onready var feedback_label: Label = $MarginContainer/VBoxContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer/FeedbackLabel
@@ -29,6 +30,12 @@ var _offline_setup_instance = null
 
 var _loading_sequence_id: int = 0
 var _server_status_sequence_id: int = 0
+var server_summary_label: Label
+var server_toggle_button: Button
+var server_settings_panel: PanelContainer
+var server_url_edit: LineEdit
+var server_apply_button: Button
+var server_reset_button: Button
 
 
 func _ready() -> void:
@@ -44,6 +51,7 @@ func _ready() -> void:
 	offline_button.pressed.connect(_on_offline_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 
+	_build_server_settings_ui()
 	email_login.text = AuthManager.email
 	password_login.text = AuthManager.password
 	register_email.text = AuthManager.email
@@ -189,6 +197,95 @@ func _update_server_status(text: String, color: Color) -> void:
 	server_status_label.modulate = color
 
 
+func _build_server_settings_ui() -> void:
+	var server_container := VBoxContainer.new()
+	server_container.name = "ServerSettingsContainer"
+	server_container.add_theme_constant_override("separation", 6)
+
+	var summary_row := HBoxContainer.new()
+	summary_row.add_theme_constant_override("separation", 8)
+	server_container.add_child(summary_row)
+
+	server_summary_label = Label.new()
+	server_summary_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	server_summary_label.clip_text = true
+	summary_row.add_child(server_summary_label)
+
+	server_toggle_button = Button.new()
+	server_toggle_button.focus_mode = Control.FOCUS_ALL
+	server_toggle_button.pressed.connect(_on_server_toggle_pressed)
+	summary_row.add_child(server_toggle_button)
+
+	server_settings_panel = PanelContainer.new()
+	server_settings_panel.visible = false
+	server_container.add_child(server_settings_panel)
+
+	var panel_margin := MarginContainer.new()
+	panel_margin.add_theme_constant_override("margin_left", 12)
+	panel_margin.add_theme_constant_override("margin_top", 10)
+	panel_margin.add_theme_constant_override("margin_right", 12)
+	panel_margin.add_theme_constant_override("margin_bottom", 10)
+	server_settings_panel.add_child(panel_margin)
+
+	var panel_box := VBoxContainer.new()
+	panel_box.add_theme_constant_override("separation", 8)
+	panel_margin.add_child(panel_box)
+
+	server_url_edit = LineEdit.new()
+	server_url_edit.placeholder_text = "192.168.1.22:8000"
+	server_url_edit.text = AuthManager.get_primary_api_base_url()
+	panel_box.add_child(server_url_edit)
+
+	var actions_row := HBoxContainer.new()
+	actions_row.add_theme_constant_override("separation", 8)
+	panel_box.add_child(actions_row)
+
+	server_apply_button = Button.new()
+	server_apply_button.pressed.connect(_on_server_apply_pressed)
+	actions_row.add_child(server_apply_button)
+
+	server_reset_button = Button.new()
+	server_reset_button.pressed.connect(_on_server_reset_pressed)
+	actions_row.add_child(server_reset_button)
+
+	var insert_index := server_status_label.get_index() + 1
+	form_container.add_child(server_container)
+	form_container.move_child(server_container, insert_index)
+	_refresh_server_summary()
+
+
+func _refresh_server_summary() -> void:
+	if server_summary_label == null:
+		return
+	server_summary_label.text = "%s %s" % [tr("Serveur:"), AuthManager.get_primary_api_base_url()]
+
+
+func _on_server_toggle_pressed() -> void:
+	if server_settings_panel == null:
+		return
+	server_settings_panel.visible = not server_settings_panel.visible
+	if server_settings_panel.visible and server_url_edit != null:
+		server_url_edit.grab_focus()
+
+
+func _on_server_apply_pressed() -> void:
+	AuthManager.set_custom_api_base_url(server_url_edit.text)
+	server_url_edit.text = AuthManager.get_primary_api_base_url()
+	_refresh_server_summary()
+	_begin_server_status_loading(tr("Verification du serveur"))
+	_refresh_server_status()
+	_set_feedback(tr("Serveur mis a jour."), Color(0.45, 1, 0.55))
+
+
+func _on_server_reset_pressed() -> void:
+	AuthManager.reset_custom_api_base_url()
+	server_url_edit.text = AuthManager.get_primary_api_base_url()
+	_refresh_server_summary()
+	_begin_server_status_loading(tr("Verification du serveur"))
+	_refresh_server_status()
+	_set_feedback(tr("Serveur par defaut restaure."), Color(0.45, 1, 0.55))
+
+
 func _begin_loading_feedback(base_text: String) -> void:
 	_loading_sequence_id += 1
 	var sequence_id := _loading_sequence_id
@@ -266,12 +363,23 @@ func _refresh_translated_ui() -> void:
 	offline_mode_label.text = tr("Mode hors ligne")
 	offline_button.text = tr("Jouer offline")
 	quit_button.text = tr("Quitter")
+	if server_toggle_button != null:
+		server_toggle_button.text = tr("Changer")
+	if server_apply_button != null:
+		server_apply_button.text = tr("Appliquer")
+	if server_reset_button != null:
+		server_reset_button.text = tr("Par defaut")
+	_refresh_server_summary()
 
 
 func _set_loading(is_loading: bool) -> void:
 	login_button.disabled = is_loading
 	register_button.disabled = is_loading
 	quit_button.disabled = is_loading
+	if server_apply_button != null:
+		server_apply_button.disabled = is_loading
+	if server_reset_button != null:
+		server_reset_button.disabled = is_loading
 
 
 func _is_valid_date_format(value: String) -> bool:

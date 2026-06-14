@@ -24,6 +24,8 @@ var _locked_position: Vector2
 var knockback_velocity: Vector2 = Vector2.ZERO
 var _has_map_bounds: bool = false
 var _map_world_bounds: Rect2 = Rect2()
+var _scene_path := ""
+var _enemy_key := ""
 
 @export var map_bounds_padding: float = 8.0
 
@@ -33,26 +35,27 @@ var _map_world_bounds: Rect2 = Rect2()
 @onready var body_collision: CollisionShape2D = get_node_or_null("mob") as CollisionShape2D
 
 func _ready() -> void:
+	if AuthManager != null and AuthManager.has_method("apply_saved_game_state"):
+		AuthManager.apply_saved_game_state()
+
 	_locked_position = global_position
 	current_hearts = max_hearts
+	_scene_path = get_parent().scene_file_path
+	if GlobalEnemyStates != null and GlobalEnemyStates.has_method("get_enemy_key"):
+		_enemy_key = GlobalEnemyStates.get_enemy_key(_scene_path, global_position)
+	else:
+		_enemy_key = "%s::%d_%d" % [_scene_path, roundi(global_position.x), roundi(global_position.y)]
 	_detect_map_bounds()
 	
 	# 🔍 Vérifier si ce slime a déjà été tué
-	var scene_path = get_parent().scene_file_path
-	if GlobalEnemyStates.is_enemy_dead(scene_path, global_position):
+	if _starter_slime_objective_is_completed() or GlobalEnemyStates.is_enemy_dead_by_key(_enemy_key):
 		print("💀 Slime déjà mort, désactivation")
-		is_dead = true
-		if body_collision:
-			body_collision.disabled = true
-		var slime_hitbox_collision := slime_hitbox.get_node_or_null("CollisionShape2D") as CollisionShape2D
-		if slime_hitbox_collision:
-			slime_hitbox_collision.disabled = true
-		slime_hitbox.monitoring = false
-		slime_hitbox.monitorable = false
-		detection_area.monitoring = false
-		detection_area.monitorable = false
-		visible = false
+		_disable_dead_slime()
 		return
+
+	var saved_state := GlobalEnemyStates.get_enemy_state_by_key(_enemy_key)
+	if not saved_state.is_empty():
+		_apply_saved_state(saved_state)
 	
 	if not detection_area.body_entered.is_connected(_on_detection_area_body_entered):
 		detection_area.body_entered.connect(_on_detection_area_body_entered)
@@ -68,6 +71,7 @@ func take_hit() -> void:
 	
 	current_hearts -= 1
 	print("🩸 Slime touché | ❤️ restants :", current_hearts)
+	_save_current_state()
 	
 	# Feedback visuel
 	animated_sprite.modulate = Color(1, 0.5, 0.5)
@@ -91,8 +95,8 @@ func die() -> void:
 	print("💀 Slime mort")
 	
 	# 📍 Enregistrer le slime comme mort dans le global
-	var scene_path = get_parent().scene_file_path
-	GlobalEnemyStates.mark_enemy_dead(scene_path, global_position)
+	_save_current_state(true)
+	GlobalEnemyStates.mark_enemy_dead_by_key(_enemy_key)
 	
 	# 📊 Incrémenter le compteur de slimes tués pour les quêtes
 	DialogueVariables.increment_slimes_killed()
@@ -117,6 +121,87 @@ func die() -> void:
 	await get_tree().create_timer(0.35).timeout
 	
 	queue_free()
+
+func _apply_saved_state(saved_state: Dictionary) -> void:
+	max_hearts = int(saved_state.get("maxHearts", max_hearts))
+	current_hearts = clampi(int(saved_state.get("currentHearts", current_hearts)), 0, max_hearts)
+	if bool(saved_state.get("isDead", false)) or current_hearts <= 0:
+		_disable_dead_slime()
+		return
+
+	var position_value: Variant = saved_state.get("position", {})
+	if typeof(position_value) == TYPE_DICTIONARY:
+		var position_dict := position_value as Dictionary
+		global_position = Vector2(
+			float(position_dict.get("x", global_position.x)),
+			float(position_dict.get("y", global_position.y))
+		)
+		_locked_position = global_position
+
+	var velocity_value: Variant = saved_state.get("velocity", {})
+	if typeof(velocity_value) == TYPE_DICTIONARY:
+		var velocity_dict := velocity_value as Dictionary
+		velocity = Vector2(
+			float(velocity_dict.get("x", velocity.x)),
+			float(velocity_dict.get("y", velocity.y))
+		)
+
+	attack_timer = float(saved_state.get("attackTimer", attack_timer))
+
+func _save_current_state(mark_dead := false) -> void:
+	if GlobalEnemyStates == null or _enemy_key == "":
+		return
+
+	var state := {
+		"scenePath": _scene_path,
+		"enemyName": name,
+		"position": {
+			"x": global_position.x,
+			"y": global_position.y,
+		},
+		"velocity": {
+			"x": velocity.x,
+			"y": velocity.y,
+		},
+		"currentHearts": 0 if mark_dead else current_hearts,
+		"maxHearts": max_hearts,
+		"attackTimer": attack_timer,
+		"isDead": mark_dead or is_dead or current_hearts <= 0,
+	}
+	GlobalEnemyStates.set_enemy_state_by_key(_enemy_key, state)
+
+func _disable_dead_slime() -> void:
+	is_dead = true
+	current_hearts = 0
+	if body_collision:
+		body_collision.disabled = true
+	var slime_hitbox_collision := slime_hitbox.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if slime_hitbox_collision:
+		slime_hitbox_collision.disabled = true
+	slime_hitbox.monitoring = false
+	slime_hitbox.monitorable = false
+	detection_area.monitoring = false
+	detection_area.monitorable = false
+	visible = false
+
+
+func _starter_slime_objective_is_completed() -> bool:
+	if DialogueVariables != null and int(DialogueVariables.slimes_killed) >= 5:
+		return true
+	if AuthManager == null:
+		return false
+	var game_data := AuthManager.get_current_game_data_snapshot() if AuthManager.has_method("get_current_game_data_snapshot") else {}
+	if typeof(game_data) != TYPE_DICTIONARY:
+		return false
+	var world_state: Variant = (game_data as Dictionary).get("worldState", {})
+	if typeof(world_state) == TYPE_DICTIONARY and int((world_state as Dictionary).get("slimesKilled", 0)) >= 5:
+		return true
+	var progression: Variant = (game_data as Dictionary).get("progression", {})
+	if typeof(progression) == TYPE_DICTIONARY:
+		var flags: Variant = (progression as Dictionary).get("flags", {})
+		if typeof(flags) == TYPE_DICTIONARY:
+			return bool((flags as Dictionary).get("slimesObjectiveCompleted", false))
+	return false
 
 func _detect_map_bounds() -> void:
 	var scene_root := get_parent()

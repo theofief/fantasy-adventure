@@ -2,7 +2,7 @@ nelmio_cors:
     defaults:
         origin_regex: true
         # Local Godot/Web builds can run from several dev ports, or from file:// with Origin: null.
-        allow_origin: ['^https?://(localhost|127\.0\.0\.1)(:\d+)?$', 'null']
+        allow_origin: ['^https?://(localhost|127\.0\.0\.1)(:\d+)?$', '^https?://(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$', 'null']
         allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
         allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With']
         expose_headers: ['Link']

@@ -217,11 +217,12 @@ final class AdminController extends AbstractController
         return $this->redirectToRoute('admin_dashboard');
     }
 
-    #[Route('/users/{id}', name: 'admin_user_show', requirements: ['id' => '\\d+'], methods: ['GET'])]
+    #[Route('/users/{id}', name: 'admin_user_show', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
     public function showUser(
         int $id,
         Request $request,
         UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
     ): Response {
         $adminUser = $this->requireAdminUser($request, $userRepository);
         if ($adminUser === null) {
@@ -236,8 +237,34 @@ final class AdminController extends AbstractController
         }
 
         $csrfToken = $this->getAdminCsrfToken($request);
+        $error = '';
+        $notice = '';
 
-        return new Response($this->renderUserDetailPage($adminUser, $user, $csrfToken));
+        if ($request->isMethod('POST')) {
+            if (!$this->verifyAdminCsrf($request)) {
+                $error = 'Jeton CSRF invalide.';
+            } else {
+                $rawGameData = trim($request->request->getString('gameData'));
+                if ($rawGameData === '') {
+                    $rawGameData = '{}';
+                }
+
+                try {
+                    $decodedGameData = json_decode($rawGameData, true, 512, JSON_THROW_ON_ERROR);
+                    if (!is_array($decodedGameData)) {
+                        $error = 'La sauvegarde doit etre un objet JSON.';
+                    } else {
+                        $user->setGameData($decodedGameData);
+                        $entityManager->flush();
+                        $notice = 'Sauvegarde joueur mise a jour.';
+                    }
+                } catch (\JsonException $exception) {
+                    $error = 'JSON invalide: '.$exception->getMessage();
+                }
+            }
+        }
+
+        return new Response($this->renderUserDetailPage($adminUser, $user, $csrfToken, $notice, $error));
     }
 
     private function requireAdminUser(Request $request, UserRepository $userRepository): ?User
@@ -372,10 +399,10 @@ final class AdminController extends AbstractController
                 $adminBadge,
                 $this->e((string) $gameDataSize),
                 $this->e($user->getApiToken() ?? '—'),
+                $user->getId(),
+                $user->getId(),
+                $user->getId(),
                 $this->e($csrfToken),
-                $user->getId(),
-                $user->getId(),
-                $user->getId(),
             );
         }
 
@@ -441,12 +468,14 @@ final class AdminController extends AbstractController
         return $this->wrapPage('Admin Fantasy Adventure', $content, $notice, $error, '/admin/login');
     }
 
-    private function renderUserDetailPage(User $adminUser, User $user, string $csrfToken): string
+    private function renderUserDetailPage(User $adminUser, User $user, string $csrfToken, string $notice, string $error): string
     {
         $gameData = $user->getGameData();
         $bindings = $this->extractInputBindings($gameData);
         $bindingsMeta = $this->extractInputBindingsMeta($gameData);
         $progress = $this->extractProgressSummary($gameData);
+        $playerSummary = $this->extractPlayerSummary($gameData);
+        $settingsSummary = $this->extractSettingsSummary($gameData);
 
         $bindingsHtml = '';
         foreach ($bindings as $actionName => $slots) {
@@ -467,7 +496,7 @@ final class AdminController extends AbstractController
                 <section class="hero-card">
                     <div class="eyebrow">Sauvegarde joueur</div>
                     <h1>%s</h1>
-                    <p>Consulte les informations de compte, la sauvegarde brute et les touches enregistrées.</p>
+                    <p>Consulte et modifie la sauvegarde JSON stockee en base pour ce joueur.</p>
                     <a class="secondary link-button" href="/admin">Retour au dashboard</a>
                 </section>
 
@@ -478,6 +507,8 @@ final class AdminController extends AbstractController
                         <div class="detail-card"><span>Role</span><strong>%s</strong></div>
                         <div class="detail-card"><span>Naissance</span><strong>%s</strong></div>
                         <div class="detail-card"><span>Derniere sauvegarde</span><strong>%s</strong></div>
+                        <div class="detail-card"><span>Position joueur</span><strong>%s</strong></div>
+                        <div class="detail-card"><span>Parametres</span><strong>%s</strong></div>
                     </div>
 
                     <div class="detail-block">
@@ -498,8 +529,12 @@ final class AdminController extends AbstractController
                     </div>
 
                     <div class="detail-block">
-                        <h2>Sauvegarde brute</h2>
-                        <pre>%s</pre>
+                        <h2>Sauvegarde JSON</h2>
+                        <form method="post" class="save-json-form">
+                            <input type="hidden" name="admin_csrf" value="%s">
+                            <textarea name="gameData" spellcheck="false">%s</textarea>
+                            <button type="submit">Enregistrer la sauvegarde</button>
+                        </form>
                     </div>
                 </section>
             </div>',
@@ -509,12 +544,15 @@ final class AdminController extends AbstractController
             $user->isAdmin() ? 'Admin' : 'User',
             $this->e($user->getDateNaissance()->format('Y-m-d')),
             $this->e($this->formatBindingsTimestamp($bindingsMeta)),
+            $this->e($playerSummary),
+            $this->e($settingsSummary),
             $this->e($progress),
             $bindingsHtml,
+            $this->e($csrfToken),
             $this->e($this->prettyPrintJson($gameData)),
         );
 
-        return $this->wrapPage('Sauvegarde joueur', $content, '', '', '/admin');
+        return $this->wrapPage('Sauvegarde joueur', $content, $notice, $error, '/admin');
     }
 
     private function renderEditPage(User $adminUser, User $user, string $error, string $csrfToken): string
@@ -731,6 +769,27 @@ final class AdminController extends AbstractController
             white-space: pre-wrap;
             word-break: break-word;
         }
+        .save-json-form {
+            display: grid;
+            gap: 14px;
+        }
+        .save-json-form textarea {
+            min-height: 420px;
+            width: 100%;
+            resize: vertical;
+            padding: 18px;
+            border-radius: 16px;
+            background: rgba(10,11,24,.85);
+            border: 1px solid rgba(247,217,76,.3);
+            color: #cfe9ff;
+            font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            white-space: pre;
+        }
+        .save-json-form textarea:focus {
+            outline: none;
+            border-color: #f7d94c;
+            box-shadow: 0 0 0 4px rgba(247,217,76,.16);
+        }
     @media (max-width: 1080px) { .layout, .layout-login { grid-template-columns: 1fr; } .login-panel, .hero-login { min-height: auto; } }
         @media (max-width: 720px) { body { padding: 16px; } .form-grid { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr; } .detail-grid { grid-template-columns: 1fr; } }
   </style>
@@ -791,8 +850,8 @@ HTML;
             }
 
             $normalized[$actionName] = [
-                isset($slots[0]) && is_string($slots[0]) && $slots[0] !== '' ? $slots[0] : '--',
-                isset($slots[1]) && is_string($slots[1]) && $slots[1] !== '' ? $slots[1] : '--',
+                $this->formatSerializedInputEvent($slots[0] ?? null),
+                $this->formatSerializedInputEvent($slots[1] ?? null),
             ];
         }
 
@@ -819,19 +878,30 @@ HTML;
 
     private function extractProgressSummary(array $gameData): string
     {
-        $keys = array_keys($gameData);
-        if ($keys === []) {
-            return 'Aucune progression supplementaire enregistree pour le moment. Le profil ne contient que les touches.';
+        if ($gameData === []) {
+            return 'Aucune progression enregistree pour le moment.';
         }
 
-        $knownKeys = [];
-        foreach ($keys as $key) {
-            if (is_string($key)) {
-                $knownKeys[] = $key;
-            }
+        $worldState = $gameData['worldState'] ?? [];
+        if (!is_array($worldState)) {
+            return 'Donnees disponibles: '.implode(', ', array_map('strval', array_keys($gameData))).'.';
         }
 
-        return 'Données de progression disponibles: '.implode(', ', $knownKeys).'.';
+        $coins = (int) ($worldState['coins'] ?? 0);
+        $hp = (int) ($worldState['hp'] ?? 0);
+        $maxHp = (int) ($worldState['maxHp'] ?? 0);
+        $slimesKilled = (int) ($worldState['slimesKilled'] ?? 0);
+        $deadEnemies = $worldState['deadEnemies'] ?? [];
+        $deadEnemiesCount = is_array($deadEnemies) ? count($deadEnemies) : 0;
+
+        return sprintf(
+            'Pieces: %d. Vie: %d/%d. Slimes tues: %d. Ennemis morts memorises: %d.',
+            $coins,
+            $hp,
+            $maxHp,
+            $slimesKilled,
+            $deadEnemiesCount,
+        );
     }
 
     private function prettyPrintJson(array $data): string
@@ -855,5 +925,66 @@ HTML;
         }
 
         return (string) $unixMs;
+    }
+
+    private function extractPlayerSummary(array $gameData): string
+    {
+        $playerState = $gameData['playerState'] ?? [];
+        if (!is_array($playerState)) {
+            return 'Aucune position sauvegardee';
+        }
+
+        $scene = (string) ($playerState['scenePath'] ?? 'scene inconnue');
+        $position = $playerState['position'] ?? [];
+        if (!is_array($position)) {
+            return $scene;
+        }
+
+        return sprintf(
+            '%s (x: %s, y: %s)',
+            $scene,
+            (string) ($position['x'] ?? '?'),
+            (string) ($position['y'] ?? '?'),
+        );
+    }
+
+    private function extractSettingsSummary(array $gameData): string
+    {
+        $settings = $gameData['settings'] ?? [];
+        if (!is_array($settings)) {
+            return 'Aucun parametre sauvegarde';
+        }
+
+        $locale = (string) ($settings['locale'] ?? 'n/a');
+        $autoReconnect = (bool) ($settings['autoReconnect'] ?? false);
+
+        return sprintf('Langue: %s. Reconnexion auto: %s.', $locale, $autoReconnect ? 'oui' : 'non');
+    }
+
+    private function formatSerializedInputEvent(mixed $event): string
+    {
+        if (is_string($event) && $event !== '') {
+            return $event;
+        }
+
+        if (!is_array($event)) {
+            return '--';
+        }
+
+        $parts = [];
+        foreach (['ctrl_pressed' => 'Ctrl', 'alt_pressed' => 'Alt', 'shift_pressed' => 'Shift', 'meta_pressed' => 'Meta'] as $key => $label) {
+            if ((bool) ($event[$key] ?? false)) {
+                $parts[] = $label;
+            }
+        }
+
+        $keyCode = (int) ($event['physical_keycode'] ?? 0);
+        if ($keyCode <= 0) {
+            $keyCode = (int) ($event['keycode'] ?? 0);
+        }
+
+        $parts[] = $keyCode > 0 ? (string) $keyCode : '?';
+
+        return implode(' + ', $parts);
     }
 }

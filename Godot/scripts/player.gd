@@ -38,6 +38,22 @@ var is_jumping := false
 var sprite_base_position := Vector2.ZERO
 
 var can_move := true
+var _save_position_elapsed := 0.0
+var _last_saved_position := Vector2.INF
+
+func stop_for_transition() -> void:
+	can_move = false
+	velocity = Vector2.ZERO
+	knockback_velocity = Vector2.ZERO
+	is_attacking = false
+	attack_duration_left = 0.0
+	if sprite != null:
+		update_animation(Vector2.ZERO)
+
+
+func resume_after_transition() -> void:
+	can_move = true
+
 
 func _ready() -> void:
 	sprite_base_position = sprite.position
@@ -54,7 +70,18 @@ func _ready() -> void:
 	hitbox.connect("area_exited", Callable(self, "_on_area_exited"))
 	hitbox.connect("body_entered", Callable(self, "_on_body_entered"))
 
+
+func _exit_tree() -> void:
+	if AuthManager != null and not AuthManager.is_applying_game_state():
+		AuthManager.commit_scene_checkpoint()
+
+
 func _physics_process(delta: float) -> void:
+	_save_position_elapsed += delta
+	if TransitionChangeManager != null and TransitionChangeManager.is_player_movement_locked():
+		stop_for_transition()
+		return
+
 	if attack_cooldown_left > 0.0:
 		attack_cooldown_left -= delta
 
@@ -113,6 +140,7 @@ func _physics_process(delta: float) -> void:
 	velocity = direction * current_speed + knockback_velocity
 	move_and_slide()
 	update_animation(direction)
+	_track_position_for_save()
 
 # ======================
 # ⚔️ COMBAT SYSTEM
@@ -281,6 +309,19 @@ func _refresh_combat_zone_state() -> void:
 			in_combat_zone = true
 			current_slime = area.get_parent()
 			break
+
+
+func _track_position_for_save() -> void:
+	if AuthManager == null or AuthManager.is_applying_game_state():
+		return
+	if _save_position_elapsed < 0.8:
+		return
+	if _last_saved_position != Vector2.INF and global_position.distance_to(_last_saved_position) < 8.0:
+		return
+
+	_save_position_elapsed = 0.0
+	_last_saved_position = global_position
+	AuthManager.commit_scene_checkpoint()
 
 # ======================
 # SAUT VISUEL

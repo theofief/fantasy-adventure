@@ -42,6 +42,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_hotbar_hud()
 	_build_inventory_panel()
+	_apply_saved_inventory_state()
 	_refresh_all()
 	_update_coin_count(GlobalCoins.coins if GlobalCoins != null else 0)
 	_update_hp_count(GlobalHp.hp if GlobalHp != null else 0)
@@ -79,6 +80,25 @@ func _select_slot(index: int) -> void:
 	if selected_slot < items.size():
 		selected_held_slot = selected_slot
 	_refresh_all()
+	if AuthManager != null and not AuthManager.is_applying_game_state():
+		AuthManager.request_local_game_state_save()
+
+
+func _apply_saved_inventory_state() -> void:
+	if AuthManager == null or typeof(AuthManager.user_profile) != TYPE_DICTIONARY:
+		return
+
+	var game_data: Variant = AuthManager.user_profile.get("gameData", {})
+	if typeof(game_data) != TYPE_DICTIONARY:
+		return
+
+	var inventory_state: Variant = (game_data as Dictionary).get("inventory", {})
+	if typeof(inventory_state) != TYPE_DICTIONARY:
+		return
+
+	var inventory_dict := inventory_state as Dictionary
+	selected_slot = clampi(int(inventory_dict.get("selectedSlot", selected_slot)), 0, TOTAL_INVENTORY_SLOTS - 1)
+	selected_held_slot = clampi(int(inventory_dict.get("selectedHeldSlot", selected_held_slot)), 0, TOTAL_INVENTORY_SLOTS - 1)
 
 
 func _select_slot_at_position(position: Vector2) -> bool:

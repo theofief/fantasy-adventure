@@ -79,7 +79,13 @@ func _refresh_translated_ui() -> void:
 
 
 func on_start_pressed() -> void:
-	get_tree().change_scene_to_packed(start_level)
+	var default_scene_path := "res://scenes/game.tscn"
+	var scene_path := AuthManager.get_resume_scene_path(default_scene_path) if AuthManager != null else default_scene_path
+	var error := get_tree().change_scene_to_file(scene_path)
+	if error != OK and scene_path != default_scene_path:
+		if AuthManager != null:
+			AuthManager.fallback_to_default_scene(default_scene_path)
+		get_tree().change_scene_to_file(default_scene_path)
 
 
 func on_settings_pressed() -> void:
