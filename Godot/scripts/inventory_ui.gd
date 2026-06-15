@@ -4,9 +4,11 @@ const SLOT_SIZE := 64
 const SMALL_SLOT_SIZE := 52
 const SLOT_GAP := 10
 const HOTBAR_SLOTS := 6
+const HUD_HOTBAR_SLOTS := 4
 const INVENTORY_COLUMNS := 4
 const INVENTORY_ROWS := 3
 const TOTAL_INVENTORY_SLOTS := INVENTORY_COLUMNS * INVENTORY_ROWS
+const INVENTORY_LAYER := 120
 
 const PLAYER_TEXTURE := preload("res://assets/tiles/Player/Player.png")
 const COIN_TEXTURE := preload("res://assets/tiles/platformer/coin.png")
@@ -29,6 +31,8 @@ var _hotbar_slots: Array[PanelContainer] = []
 var _inventory_slots: Array[PanelContainer] = []
 var _inventory_hotbar_slots: Array[PanelContainer] = []
 var _inventory_layer: Control
+var _inventory_panel: PanelContainer
+var _inventory_close_button: Button
 var _coin_count_label: Label
 var _hp_count_label: Label
 var _detail_icon_label: Label
@@ -39,6 +43,7 @@ var _blur_material: ShaderMaterial
 
 
 func _ready() -> void:
+	layer = INVENTORY_LAYER
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_hotbar_hud()
 	_build_inventory_panel()
@@ -58,14 +63,35 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 
-	if _inventory_layer != null and _inventory_layer.visible and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if _select_slot_at_position(event.position):
-			get_viewport().set_input_as_handled()
-			return
-
 	if event.is_action_pressed("ui_inventory"):
 		_toggle_inventory()
 		get_viewport().set_input_as_handled()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _inventory_layer == null or not _inventory_layer.visible:
+		return
+
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if not mouse_event.pressed or mouse_event.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if _select_slot_at_position(mouse_event.position):
+			get_viewport().set_input_as_handled()
+			return
+		if _is_pointer_outside_inventory(mouse_event.position):
+			_close_inventory(true)
+			get_viewport().set_input_as_handled()
+	elif event is InputEventScreenTouch:
+		var touch_event := event as InputEventScreenTouch
+		if not touch_event.pressed:
+			return
+		if _select_slot_at_position(touch_event.position):
+			get_viewport().set_input_as_handled()
+			return
+		if _is_pointer_outside_inventory(touch_event.position):
+			_close_inventory(true)
+			get_viewport().set_input_as_handled()
 
 
 func _toggle_inventory() -> void:
@@ -119,7 +145,10 @@ func _open_inventory() -> void:
 	if UIManager != null and UIManager.menu_open:
 		return
 
+	layer = INVENTORY_LAYER
 	_inventory_layer.visible = true
+	if _inventory_close_button != null:
+		_inventory_close_button.visible = true
 	if UIManager != null:
 		UIManager.menu_open = true
 		UIManager.current_menu = "inventory"
@@ -131,6 +160,9 @@ func _open_inventory() -> void:
 
 func _close_inventory(suppress_pause: bool = false) -> void:
 	_inventory_layer.visible = false
+	if _inventory_close_button != null:
+		_inventory_close_button.visible = false
+	layer = INVENTORY_LAYER
 	if UIManager != null and UIManager.current_menu == "inventory":
 		UIManager.menu_open = false
 		UIManager.current_menu = ""
@@ -153,17 +185,18 @@ func _build_hotbar_hud() -> void:
 	hotbar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hotbar.alignment = BoxContainer.ALIGNMENT_CENTER
 	hotbar.add_theme_constant_override("separation", SLOT_GAP)
-	hotbar.anchor_left = 0.0
-	hotbar.anchor_right = 0.0
+	var hotbar_width := (SMALL_SLOT_SIZE * HUD_HOTBAR_SLOTS) + (SLOT_GAP * (HUD_HOTBAR_SLOTS - 1))
+	hotbar.anchor_left = 0.5
+	hotbar.anchor_right = 0.5
 	hotbar.anchor_top = 1.0
 	hotbar.anchor_bottom = 1.0
-	hotbar.offset_left = 28
-	hotbar.offset_right = 28 + (SMALL_SLOT_SIZE * 4) + SLOT_GAP * 3
+	hotbar.offset_left = -hotbar_width / 2.0
+	hotbar.offset_right = hotbar_width / 2.0
 	hotbar.offset_top = -84
 	hotbar.offset_bottom = -24
 	root.add_child(hotbar)
 
-	for index in range(4):
+	for index in range(HUD_HOTBAR_SLOTS):
 		var slot := _create_slot(SMALL_SLOT_SIZE, Color(0, 0, 0, 0.88), Color(0.08, 0.08, 0.08, 1.0), false)
 		hotbar.add_child(slot)
 		_hotbar_slots.append(slot)
@@ -195,18 +228,18 @@ func _build_inventory_panel() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_inventory_layer.add_child(center)
 
-	var panel := PanelContainer.new()
-	panel.name = "InventoryPanel"
-	panel.custom_minimum_size = Vector2(980, 620)
-	panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.89, 0.83, 0.58, 0.52), Color(0.04, 0.04, 0.04, 1), 2, 18))
-	center.add_child(panel)
+	_inventory_panel = PanelContainer.new()
+	_inventory_panel.name = "InventoryPanel"
+	_inventory_panel.custom_minimum_size = Vector2(980, 620)
+	_inventory_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.89, 0.83, 0.58, 0.52), Color(0.04, 0.04, 0.04, 1), 2, 18))
+	center.add_child(_inventory_panel)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 44)
 	margin.add_theme_constant_override("margin_top", 24)
 	margin.add_theme_constant_override("margin_right", 44)
 	margin.add_theme_constant_override("margin_bottom", 24)
-	panel.add_child(margin)
+	_inventory_panel.add_child(margin)
 
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 22)
@@ -215,6 +248,7 @@ func _build_inventory_panel() -> void:
 	root.add_child(_build_title())
 	root.add_child(_build_middle_content())
 	root.add_child(_build_bottom_content())
+	_inventory_close_button = _add_close_button(_inventory_layer, Vector2(424, -286), _close_inventory.bind(true))
 
 
 func _build_title() -> Control:
@@ -231,6 +265,39 @@ func _build_title() -> Control:
 	title.add_theme_color_override("font_color", Color.BLACK)
 	header.add_child(title)
 	return header
+
+
+func _add_close_button(parent: Control, center_offset: Vector2, callback: Callable) -> Button:
+	var close_button := Button.new()
+	close_button.name = "CloseButton"
+	close_button.text = "X"
+	close_button.focus_mode = Control.FOCUS_NONE
+	close_button.custom_minimum_size = Vector2(48, 42)
+	close_button.anchor_left = 0.5
+	close_button.anchor_right = 0.5
+	close_button.anchor_top = 0.5
+	close_button.anchor_bottom = 0.5
+	close_button.offset_left = center_offset.x
+	close_button.offset_right = center_offset.x + 48
+	close_button.offset_top = center_offset.y
+	close_button.offset_bottom = center_offset.y + 42
+	close_button.add_theme_font_override("font", PIXEL_FONT)
+	close_button.add_theme_font_size_override("font_size", 18)
+	close_button.add_theme_stylebox_override("normal", _make_panel_style(Color(0.05, 0.05, 0.04, 0.96), Color(1, 1, 1, 0.75), 2, 8))
+	close_button.add_theme_stylebox_override("hover", _make_panel_style(Color(0.16, 0.16, 0.14, 0.98), Color(1, 1, 1, 0.9), 2, 8))
+	close_button.add_theme_stylebox_override("pressed", _make_panel_style(Color(0.72, 0.81, 0.23, 0.95), Color.WHITE, 2, 8))
+	close_button.pressed.connect(callback)
+	close_button.visible = false
+	parent.add_child(close_button)
+	return close_button
+
+
+func _is_pointer_outside_inventory(position: Vector2) -> bool:
+	if _inventory_close_button != null and _inventory_close_button.get_global_rect().has_point(position):
+		return false
+	if _inventory_panel == null:
+		return false
+	return not _inventory_panel.get_global_rect().has_point(position)
 
 
 func _build_middle_content() -> Control:

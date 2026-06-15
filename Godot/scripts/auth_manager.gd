@@ -1,6 +1,10 @@
 extends Node
 
 const DEFAULT_API_BASE_URLS := [
+	"https://10.1.4.34:8000/api",
+	"https://192.168.1.22:8000/api",
+	"https://127.0.0.1:8000/api",
+	"http://10.1.4.34:8000/api",
 	"http://192.168.1.22:8000/api",
 	"http://127.0.0.1:8099/api",
 	"http://127.0.0.1:8000/api",
@@ -125,6 +129,9 @@ func save_session() -> void:
 func get_primary_api_base_url() -> String:
 	if custom_api_base_url != "":
 		return custom_api_base_url
+	var web_api_url := _get_web_api_base_url()
+	if web_api_url != "":
+		return web_api_url
 	return DEFAULT_API_BASE_URLS[0]
 
 
@@ -140,12 +147,26 @@ func reset_custom_api_base_url() -> void:
 
 func _get_api_base_urls() -> Array[String]:
 	var urls: Array[String] = []
+	var web_api_url := _get_web_api_base_url()
+	if web_api_url != "":
+		urls.append(web_api_url)
 	if custom_api_base_url != "":
-		urls.append(custom_api_base_url)
+		if not urls.has(custom_api_base_url):
+			urls.append(custom_api_base_url)
 	for url in DEFAULT_API_BASE_URLS:
 		if not urls.has(url):
 			urls.append(url)
 	return urls
+
+
+func _get_web_api_base_url() -> String:
+	if not OS.has_feature("web"):
+		return ""
+	var origin_variant: Variant = JavaScriptBridge.eval("window.location.origin")
+	var origin := str(origin_variant).strip_edges().trim_suffix("/")
+	if origin == "":
+		return ""
+	return "%s/api" % origin
 
 
 func _normalize_api_base_url(raw_url: String) -> String:

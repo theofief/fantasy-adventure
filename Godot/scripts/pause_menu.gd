@@ -4,6 +4,7 @@ const MAIN_MENU := preload("res://scenes/main_menu.tscn")
 const SETTINGS_MENU_SCENE := preload("res://scenes/settings_menu.tscn")
 
 @onready var pause_panel = $PanelContainer
+@onready var menu_content: Control = $PanelContainer/HBoxContainer/VBoxContainer
 @onready var resume_button: Button = $PanelContainer/HBoxContainer/VBoxContainer/ResumeButton
 @onready var settings_button: Button = $PanelContainer/HBoxContainer/VBoxContainer/SettingsButton
 @onready var quit_button: Button = $PanelContainer/HBoxContainer/VBoxContainer/QuitButton
@@ -11,7 +12,12 @@ const SETTINGS_MENU_SCENE := preload("res://scenes/settings_menu.tscn")
 var settings_overlay: SettingsMenu = null
 
 func _ready():
+	if get_parent() is CanvasLayer:
+		(get_parent() as CanvasLayer).layer = 120
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	var bg := get_node_or_null("ColorRect") as ColorRect
+	if bg != null:
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	$AnimationPlayer.play("RESET")
 	if SettingsManager != null and SettingsManager.has_signal("locale_changed"):
 		SettingsManager.locale_changed.connect(_on_locale_changed)
@@ -54,6 +60,22 @@ func _process(_delta):
 	testEsc()
 	if UIManager.suppress_pause_once and not Input.is_action_just_pressed("esc"):
 		UIManager.suppress_pause_once = false
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if UIManager == null or UIManager.current_menu != "pause":
+		return
+
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT and _is_pointer_outside_pause_content(mouse_event.position):
+			resume()
+			get_viewport().set_input_as_handled()
+	elif event is InputEventScreenTouch:
+		var touch_event := event as InputEventScreenTouch
+		if touch_event.pressed and _is_pointer_outside_pause_content(touch_event.position):
+			resume()
+			get_viewport().set_input_as_handled()
 
 func _on_resume_button_pressed() -> void:
 	resume()
@@ -103,3 +125,9 @@ func _refresh_translated_ui() -> void:
 	resume_button.text = tr("Resume")
 	settings_button.text = tr("Settings")
 	quit_button.text = tr("Back to main")
+
+
+func _is_pointer_outside_pause_content(position: Vector2) -> bool:
+	if menu_content != null and menu_content.get_global_rect().has_point(position):
+		return false
+	return true

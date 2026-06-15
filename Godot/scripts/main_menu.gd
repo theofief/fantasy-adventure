@@ -118,4 +118,7 @@ func on_logout_pressed() -> void:
 	
 
 func on_quit_pressed() -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.location.href = '/'")
+		return
 	get_tree().quit()

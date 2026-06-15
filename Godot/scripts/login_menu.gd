@@ -51,6 +51,7 @@ func _ready() -> void:
 	offline_button.pressed.connect(_on_offline_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 
+	_setup_mobile_keyboard_fields()
 	_build_server_settings_ui()
 	email_login.text = AuthManager.email
 	password_login.text = AuthManager.password
@@ -184,6 +185,9 @@ func _on_offline_cancelled() -> void:
 
 
 func _on_quit_pressed() -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.location.href = '/'")
+		return
 	get_tree().quit()
 
 
@@ -235,6 +239,7 @@ func _build_server_settings_ui() -> void:
 	server_url_edit.placeholder_text = "192.168.1.22:8000"
 	server_url_edit.text = AuthManager.get_primary_api_base_url()
 	panel_box.add_child(server_url_edit)
+	_register_mobile_keyboard_field(server_url_edit)
 
 	var actions_row := HBoxContainer.new()
 	actions_row.add_theme_constant_override("separation", 8)
@@ -258,6 +263,41 @@ func _refresh_server_summary() -> void:
 	if server_summary_label == null:
 		return
 	server_summary_label.text = "%s %s" % [tr("Serveur:"), AuthManager.get_primary_api_base_url()]
+
+
+func _setup_mobile_keyboard_fields() -> void:
+	var fields: Array[LineEdit] = [
+		email_login,
+		password_login,
+		register_email,
+		register_password,
+		register_password_confirm,
+		register_nom,
+		register_prenom,
+		register_date,
+		register_pseudo,
+	]
+	for field in fields:
+		_register_mobile_keyboard_field(field)
+
+
+func _register_mobile_keyboard_field(field: LineEdit) -> void:
+	if field == null:
+		return
+	field.focus_entered.connect(_show_mobile_keyboard_for_field.bind(field))
+	field.focus_exited.connect(_hide_mobile_keyboard)
+
+
+func _show_mobile_keyboard_for_field(field: LineEdit) -> void:
+	if not OS.has_feature("web"):
+		return
+	DisplayServer.virtual_keyboard_show(field.text, Rect2(field.global_position, field.size), DisplayServer.KEYBOARD_TYPE_DEFAULT, -1, field.caret_column, field.caret_column)
+
+
+func _hide_mobile_keyboard() -> void:
+	if not OS.has_feature("web"):
+		return
+	DisplayServer.virtual_keyboard_hide()
 
 
 func _on_server_toggle_pressed() -> void:

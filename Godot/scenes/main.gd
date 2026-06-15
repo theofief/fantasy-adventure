@@ -49,6 +49,7 @@ func _ready() -> void:
 	_ensure_game_hud()
 	_ensure_inventory_ui()
 	_ensure_map_layer()
+	_ensure_mobile_controls()
 	_ensure_house_labels()
 
 
@@ -143,6 +144,20 @@ func _ensure_inventory_ui() -> void:
 	inventory_ui.name = "InventoryUI"
 	inventory_ui.set_script(inventory_script)
 	add_child(inventory_ui)
+
+
+func _ensure_mobile_controls() -> void:
+	if get_node_or_null("MobileControls") != null:
+		return
+
+	var mobile_controls_script := load("res://scripts/mobile_controls.gd")
+	if mobile_controls_script == null:
+		return
+
+	var mobile_controls := CanvasLayer.new()
+	mobile_controls.name = "MobileControls"
+	mobile_controls.set_script(mobile_controls_script)
+	add_child(mobile_controls)
 
 
 func _create_coin_sprite_frames(coin_texture: Texture2D) -> SpriteFrames:

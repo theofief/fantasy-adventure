@@ -15,12 +15,14 @@ var is_open := false
 var island_selector_panel : PanelContainer
 var first_island_button : Button
 var second_island_button : Button
+var close_button : Button
 var _is_changing_island := false
 
 # 🔥 Offset pour ajuster la position de la map (modifiable dans l’inspecteur)
 @export var camera_offset : Vector2 = Vector2(700, -300)
 
 func _ready():
+	layer = 120
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_ensure_map_nodes()
 	player = get_node_or_null("../player")
@@ -87,6 +89,20 @@ func _input(event: InputEvent) -> void:
 		_on_first_island_button_pressed()
 		return
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not is_open:
+		return
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT and _is_pointer_outside_map_content(mouse_event.position):
+			close_map()
+			get_viewport().set_input_as_handled()
+	elif event is InputEventScreenTouch:
+		var touch_event := event as InputEventScreenTouch
+		if touch_event.pressed and _is_pointer_outside_map_content(touch_event.position):
+			close_map()
+			get_viewport().set_input_as_handled()
+
 func toggle_map():
 	if not is_open:
 		open_map()
@@ -103,6 +119,8 @@ func open_map():
 	
 	visible = true
 	is_open = true
+	if close_button != null:
+		close_button.visible = true
 	_layout_island_selector()
 	_refresh_island_selector()
 	get_tree().paused = true
@@ -121,6 +139,8 @@ func close_map():
 	
 	visible = false
 	is_open = false
+	if close_button != null:
+		close_button.visible = false
 	
 	# 🔓 libère UIManager
 	UIManager.menu_open = false
@@ -134,6 +154,7 @@ func _ensure_map_nodes() -> void:
 		bg.name = "ColorRect"
 		bg.color = Color(0, 0, 0, 0.54)
 		add_child(bg)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	panel_container = get_node_or_null("PanelContainer") as PanelContainer
 	if panel_container == null:
@@ -178,6 +199,60 @@ func _ensure_map_nodes() -> void:
 		subviewport.add_child(camera)
 
 	anim = get_node_or_null("AnimationPlayer") as AnimationPlayer
+	_ensure_close_button()
+
+
+func _ensure_close_button() -> void:
+	if close_button != null:
+		return
+
+	close_button = Button.new()
+	close_button.name = "CloseButton"
+	close_button.text = "X"
+	close_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	close_button.focus_mode = Control.FOCUS_NONE
+	close_button.custom_minimum_size = Vector2(52, 44)
+	close_button.anchor_left = 1.0
+	close_button.anchor_right = 1.0
+	close_button.anchor_top = 0.0
+	close_button.anchor_bottom = 0.0
+	close_button.offset_left = -76.0
+	close_button.offset_right = -24.0
+	close_button.offset_top = 28.0
+	close_button.offset_bottom = 72.0
+	close_button.z_index = 1200
+	close_button.add_theme_font_size_override("font_size", 18)
+	close_button.add_theme_stylebox_override("normal", _make_button_style(Color(0.05, 0.05, 0.04, 0.96), Color(1, 1, 1, 0.75)))
+	close_button.add_theme_stylebox_override("hover", _make_button_style(Color(0.16, 0.16, 0.14, 0.98), Color(1, 1, 1, 0.9)))
+	close_button.add_theme_stylebox_override("pressed", _make_button_style(Color(0.72, 0.81, 0.23, 0.95), Color.WHITE))
+	close_button.pressed.connect(close_map)
+	close_button.visible = false
+	add_child(close_button)
+
+
+func _make_button_style(fill: Color, border: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = border
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	return style
+
+
+func _is_pointer_outside_map_content(position: Vector2) -> bool:
+	if close_button != null and close_button.get_global_rect().has_point(position):
+		return false
+	if island_selector_panel != null and island_selector_panel.get_global_rect().has_point(position):
+		return false
+	if subviewport_container != null and subviewport_container.get_global_rect().has_point(position):
+		return false
+	return true
 
 
 func _set_control_rect_if_free_anchors(control: Control, control_size: Vector2, control_position: Vector2) -> void:

@@ -27,6 +27,7 @@ func _ready() -> void:
 	if sc_script != null:
 		var sc_node = sc_script.new()
 		add_child(sc_node)
+	_ensure_mobile_controls()
 
 
 func _process(delta: float) -> void:
@@ -66,3 +67,17 @@ func spawn_mouette() -> void:
 		mouette.global_position = Vector2(2200, randf_range(min_y, max_y))
 
 	mouette.set_direction(from_left)
+
+
+func _ensure_mobile_controls() -> void:
+	if get_node_or_null("MobileControls") != null:
+		return
+
+	var mobile_controls_script := load("res://scripts/mobile_controls.gd")
+	if mobile_controls_script == null:
+		return
+
+	var mobile_controls := CanvasLayer.new()
+	mobile_controls.name = "MobileControls"
+	mobile_controls.set_script(mobile_controls_script)
+	add_child(mobile_controls)
