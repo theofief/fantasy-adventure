@@ -300,3 +300,87 @@ msgstr "Slimes killed: %d/5"
 
 msgid "Bravo! You killed all the slimes. Return to the NPC."
 msgstr "Bravo! You killed all the slimes. Return to the NPC."
+
+msgid "Mini Games"
+msgstr "Mini Games"
+
+msgid "Choisis une petite aventure"
+msgstr "Choose a small adventure"
+
+msgid "Records - Chasse %d | Slimes %d | Recolte %d"
+msgstr "Records - Hunt %d | Slimes %d | Harvest %d"
+
+msgid "Chasse aux pieces"
+msgstr "Coin Hunt"
+
+msgid "Clique les pieces avant qu'elles tombent."
+msgstr "Click the coins before they fall."
+
+msgid "Memoire des slimes"
+msgstr "Slime Memory"
+
+msgid "Repete la sequence des slimes."
+msgstr "Repeat the slime sequence."
+
+msgid "Recolte express"
+msgstr "Quick Harvest"
+
+msgid "Ramasse seulement l'objet demande."
+msgstr "Collect only the requested item."
+
+msgid "Clique les pieces avant qu'elles disparaissent"
+msgstr "Click the coins before they disappear"
+
+msgid "Temps ecoule"
+msgstr "Time is up"
+
+msgid "Observe, puis repete la sequence"
+msgstr "Watch, then repeat the sequence"
+
+msgid "Regarde..."
+msgstr "Watch..."
+
+msgid "A toi"
+msgstr "Your turn"
+
+msgid "Mauvais slime"
+msgstr "Wrong slime"
+
+msgid "Panier termine"
+msgstr "Basket complete"
+
+msgid "Ramasse: %s"
+msgstr "Collect: %s"
+
+msgid "%s - score %d"
+msgstr "%s - score %d"
+
+msgid "Record: %d"
+msgstr "Record: %d"
+
+msgid "Rejouer"
+msgstr "Retry"
+
+msgid "Autres mini jeux"
+msgstr "Other mini games"
+
+msgid "Retour aux mini jeux"
+msgstr "Back to mini games"
+
+msgid "Score: %d   Temps: %02d"
+msgstr "Score: %d   Time: %02d"
+
+msgid "Sequence: %d   Record: %d"
+msgstr "Sequence: %d   Record: %d"
+
+msgid "fruits"
+msgstr "fruit"
+
+msgid "baies"
+msgstr "berries"
+
+msgid "minerai"
+msgstr "ore"
+
+msgid "pieces"
+msgstr "coins"

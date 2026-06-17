@@ -6,6 +6,8 @@ cd "$(dirname "$0")"
 APP_URL="https://0.0.0.0:8000"
 PHP_HOST="127.0.0.1"
 PHP_PORT="8001"
+HTTP_HOST="0.0.0.0"
+HTTP_PORT="8099"
 HTTPS_HOST="0.0.0.0"
 HTTPS_PORT="8000"
 CERT_DIR="var/dev-certs"
@@ -88,13 +90,16 @@ print_urls() {
 	echo ""
 	echo "Back lance."
 	echo "Local:   https://127.0.0.1:${HTTPS_PORT}"
+	echo "Client:  http://127.0.0.1:${HTTP_PORT}"
 	if [ -n "$lan_ip" ]; then
 		echo "Reseau:  https://${lan_ip}:${HTTPS_PORT}"
+		echo "Client:  http://${lan_ip}:${HTTP_PORT}"
 	fi
 	echo "Web jeu: https://127.0.0.1:${HTTPS_PORT}/play"
 	echo ""
 	echo "Logs:"
 	echo "  PHP   ${LOG_DIR}/php-server.log"
+	echo "  HTTP  ${LOG_DIR}/http-server.log"
 	echo "  HTTPS ${LOG_DIR}/https-proxy.log"
 	echo ""
 	echo "Ctrl+C pour arreter."
@@ -130,8 +135,16 @@ if port_in_use "$PHP_PORT"; then
 	exit 1
 fi
 
+if port_in_use "$HTTP_PORT"; then
+	echo "Le port client ${HTTP_PORT} est deja utilise. Arrete l'ancien serveur ou change HTTP_PORT dans ce script."
+	exit 1
+fi
+
 php -S "${PHP_HOST}:${PHP_PORT}" -t public >"${LOG_DIR}/php-server.log" 2>&1 &
 PHP_PID=$!
+
+php -S "${HTTP_HOST}:${HTTP_PORT}" -t public >"${LOG_DIR}/http-server.log" 2>&1 &
+HTTP_PID=$!
 
 HTTPS_PROXY_HOST="$HTTPS_HOST" \
 HTTPS_PROXY_PORT="$HTTPS_PORT" \
@@ -143,7 +156,7 @@ node tools/https-proxy.mjs >"${LOG_DIR}/https-proxy.log" 2>&1 &
 PROXY_PID=$!
 
 cleanup() {
-	kill "$PROXY_PID" "$PHP_PID" >/dev/null 2>&1 || true
+	kill "$PROXY_PID" "$PHP_PID" "$HTTP_PID" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT INT TERM
 

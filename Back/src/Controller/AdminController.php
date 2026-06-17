@@ -627,6 +627,16 @@ final class AdminController extends AbstractController
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{$safeTitle}</title>
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="application-name" content="Fantasy Adventure">
+  <meta name="apple-mobile-web-app-title" content="Fantasy Adventure">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#f7d94c">
+  <link rel="apple-touch-icon" sizes="180x180" href="/play/index.180x180.png">
+  <link rel="icon" type="image/png" sizes="144x144" href="/play/index.144x144.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/play/index.512x512.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -893,14 +903,29 @@ HTML;
         $slimesKilled = (int) ($worldState['slimesKilled'] ?? 0);
         $deadEnemies = $worldState['deadEnemies'] ?? [];
         $deadEnemiesCount = is_array($deadEnemies) ? count($deadEnemies) : 0;
+        $miniGames = $gameData['miniGames'] ?? [];
+        $miniGamesSummary = 'Mini-jeux: aucune donnee.';
+        if (is_array($miniGames)) {
+            $bestScores = $miniGames['bestScores'] ?? [];
+            $runsPlayed = $miniGames['runsPlayed'] ?? [];
+            $miniGamesSummary = sprintf(
+                'Mini-jeux: chasse %d, memoire %d, recolte %d. Parties: %d. Pieces gagnees via mini-jeux: %d.',
+                is_array($bestScores) ? (int) ($bestScores['coin'] ?? 0) : 0,
+                is_array($bestScores) ? (int) ($bestScores['memory'] ?? 0) : 0,
+                is_array($bestScores) ? (int) ($bestScores['harvest'] ?? 0) : 0,
+                is_array($runsPlayed) ? array_sum(array_map('intval', $runsPlayed)) : 0,
+                (int) ($miniGames['totalCoinsEarned'] ?? 0),
+            );
+        }
 
         return sprintf(
-            'Pieces: %d. Vie: %d/%d. Slimes tues: %d. Ennemis morts memorises: %d.',
+            'Pieces: %d. Vie: %d/%d. Slimes tues: %d. Ennemis morts memorises: %d. %s',
             $coins,
             $hp,
             $maxHp,
             $slimesKilled,
             $deadEnemiesCount,
+            $miniGamesSummary,
         );
     }
 

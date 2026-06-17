@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,9 +22,103 @@ final class LandingController extends AbstractController
             throw new NotFoundHttpException('Fichier index.html introuvable a la racine du projet.');
         }
 
-        return new Response((string) file_get_contents($indexPath), Response::HTTP_OK, [
+        $contents = $this->injectPwaHead((string) file_get_contents($indexPath));
+
+        return new Response($contents, Response::HTTP_OK, [
             'Content-Type' => 'text/html; charset=UTF-8',
         ]);
+    }
+
+    #[Route('/site.webmanifest', name: 'site_webmanifest', methods: ['GET'])]
+    #[Route('/manifest.webmanifest', name: 'site_webmanifest_alias', methods: ['GET'])]
+    public function webmanifest(): JsonResponse
+    {
+        $response = new JsonResponse([
+            'id' => '/play',
+            'name' => 'Fantasy Adventure',
+            'short_name' => 'Fantasy',
+            'description' => 'RPG pixel art jouable dans le navigateur avec sauvegarde, exploration, combats et inventaire.',
+            'lang' => 'fr',
+            'dir' => 'ltr',
+            'start_url' => '/play',
+            'scope' => '/',
+            'display' => 'fullscreen',
+            'display_override' => ['fullscreen', 'standalone', 'minimal-ui'],
+            'orientation' => 'any',
+            'background_color' => '#0d0d1a',
+            'theme_color' => '#f7d94c',
+            'categories' => ['games', 'entertainment', 'role-playing'],
+            'prefer_related_applications' => false,
+            'icons' => [
+                [
+                    'src' => '/play/index.144x144.png',
+                    'sizes' => '144x144',
+                    'type' => 'image/png',
+                    'purpose' => 'any',
+                ],
+                [
+                    'src' => '/play/index.180x180.png',
+                    'sizes' => '180x180',
+                    'type' => 'image/png',
+                    'purpose' => 'any',
+                ],
+                [
+                    'src' => '/play/index.512x512.png',
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable',
+                ],
+            ],
+            'shortcuts' => [
+                [
+                    'name' => 'Jouer',
+                    'short_name' => 'Jouer',
+                    'description' => 'Lancer Fantasy Adventure directement.',
+                    'url' => '/play',
+                    'icons' => [
+                        [
+                            'src' => '/play/index.144x144.png',
+                            'sizes' => '144x144',
+                            'type' => 'image/png',
+                        ],
+                    ],
+                ],
+                [
+                    'name' => 'Panel admin',
+                    'short_name' => 'Admin',
+                    'description' => 'Consulter et modifier les sauvegardes des joueurs.',
+                    'url' => '/admin',
+                    'icons' => [
+                        [
+                            'src' => '/play/index.144x144.png',
+                            'sizes' => '144x144',
+                            'type' => 'image/png',
+                        ],
+                    ],
+                ],
+            ],
+            'screenshots' => [
+                [
+                    'src' => '/background-image.png',
+                    'sizes' => '600x337',
+                    'type' => 'image/png',
+                    'form_factor' => 'wide',
+                    'label' => 'Fantasy Adventure - monde pixel art',
+                ],
+                [
+                    'src' => '/play/index.png',
+                    'sizes' => '800x600',
+                    'type' => 'image/png',
+                    'form_factor' => 'narrow',
+                    'label' => 'Fantasy Adventure - ecran de lancement',
+                ],
+            ],
+        ]);
+
+        $response->headers->set('Content-Type', 'application/manifest+json; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 
     #[Route('/play', name: 'game_web_index', methods: ['GET'])]
@@ -89,6 +184,7 @@ final class LandingController extends AbstractController
         $contents = (string) file_get_contents($fullPath);
         if (strtolower((string) pathinfo($fullPath, PATHINFO_EXTENSION)) === 'html') {
             $contents = str_replace('<head>', '<head><base href="/play/">', $contents);
+            $contents = $this->injectPwaHead($contents);
         }
 
         return new Response($contents, Response::HTTP_OK, [
@@ -122,5 +218,27 @@ final class LandingController extends AbstractController
             'otf' => 'font/otf',
             default => 'application/octet-stream',
         };
+    }
+
+    private function injectPwaHead(string $html): string
+    {
+        if (str_contains($html, 'rel="manifest"')) {
+            return $html;
+        }
+
+        $pwaHead = <<<'HTML'
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="application-name" content="Fantasy Adventure">
+  <meta name="apple-mobile-web-app-title" content="Fantasy Adventure">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#f7d94c">
+  <link rel="apple-touch-icon" sizes="180x180" href="/play/index.180x180.png">
+  <link rel="icon" type="image/png" sizes="144x144" href="/play/index.144x144.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/play/index.512x512.png">
+HTML;
+
+        return str_replace('</head>', $pwaHead."\n</head>", $html);
     }
 }

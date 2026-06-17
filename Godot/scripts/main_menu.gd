@@ -3,6 +3,7 @@ extends Control
 
 
 const SETTINGS_MENU_SCENE := preload("res://scenes/settings_menu.tscn")
+const MINI_GAMES_SCENE := "res://scenes/mini_games_menu.tscn"
 
 @onready var PlaySoloButton = $MarginContainer/HBoxContainer/VBoxContainer/PlaySoloButton
 @onready var PlayMiniGamesButton = $MarginContainer/HBoxContainer/VBoxContainer/PlayMiniGamesButton
@@ -27,6 +28,7 @@ func _ready():
 		UIManager.current_menu = ""
 
 	PlaySoloButton.button_down.connect(on_start_pressed)
+	PlayMiniGamesButton.button_down.connect(on_mini_games_pressed)
 	SettingsButton.button_down.connect(on_settings_pressed)
 	LogoutButton.button_down.connect(on_logout_pressed)
 	QuitButton.button_down.connect(on_quit_pressed)
@@ -86,6 +88,10 @@ func on_start_pressed() -> void:
 		if AuthManager != null:
 			AuthManager.fallback_to_default_scene(default_scene_path)
 		get_tree().change_scene_to_file(default_scene_path)
+
+
+func on_mini_games_pressed() -> void:
+	get_tree().change_scene_to_file(MINI_GAMES_SCENE)
 
 
 func on_settings_pressed() -> void:

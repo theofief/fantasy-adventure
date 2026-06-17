@@ -298,3 +298,87 @@ msgstr "La siguiente isla sera la ciudad principal. Aun esta en construccion, pe
 
 msgid "See you soon hero!"
 msgstr "Hasta pronto, heroe!"
+
+msgid "Mini Games"
+msgstr "Minijuegos"
+
+msgid "Choisis une petite aventure"
+msgstr "Elige una aventura corta"
+
+msgid "Records - Chasse %d | Slimes %d | Recolte %d"
+msgstr "Records - Caza %d | Slimes %d | Cosecha %d"
+
+msgid "Chasse aux pieces"
+msgstr "Caza de monedas"
+
+msgid "Clique les pieces avant qu'elles tombent."
+msgstr "Pulsa las monedas antes de que caigan."
+
+msgid "Memoire des slimes"
+msgstr "Memoria slime"
+
+msgid "Repete la sequence des slimes."
+msgstr "Repite la secuencia de slimes."
+
+msgid "Recolte express"
+msgstr "Cosecha express"
+
+msgid "Ramasse seulement l'objet demande."
+msgstr "Recoge solo el objeto pedido."
+
+msgid "Clique les pieces avant qu'elles disparaissent"
+msgstr "Pulsa las monedas antes de que desaparezcan"
+
+msgid "Temps ecoule"
+msgstr "Tiempo agotado"
+
+msgid "Observe, puis repete la sequence"
+msgstr "Observa y repite la secuencia"
+
+msgid "Regarde..."
+msgstr "Mira..."
+
+msgid "A toi"
+msgstr "Tu turno"
+
+msgid "Mauvais slime"
+msgstr "Slime equivocado"
+
+msgid "Panier termine"
+msgstr "Cesta completa"
+
+msgid "Ramasse: %s"
+msgstr "Recoge: %s"
+
+msgid "%s - score %d"
+msgstr "%s - puntuacion %d"
+
+msgid "Record: %d"
+msgstr "Record: %d"
+
+msgid "Rejouer"
+msgstr "Reintentar"
+
+msgid "Autres mini jeux"
+msgstr "Otros minijuegos"
+
+msgid "Retour aux mini jeux"
+msgstr "Volver a minijuegos"
+
+msgid "Score: %d   Temps: %02d"
+msgstr "Puntuacion: %d   Tiempo: %02d"
+
+msgid "Sequence: %d   Record: %d"
+msgstr "Secuencia: %d   Record: %d"
+
+msgid "fruits"
+msgstr "frutas"
+
+msgid "baies"
+msgstr "bayas"
+
+msgid "minerai"
+msgstr "mineral"
+
+msgid "pieces"
+msgstr "monedas"

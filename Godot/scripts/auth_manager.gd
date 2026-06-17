@@ -1,12 +1,14 @@
 extends Node
 
 const DEFAULT_API_BASE_URLS := [
+	"http://10.1.4.34:8099/api",
+	"http://192.168.1.22:8099/api",
+	"http://127.0.0.1:8099/api",
 	"https://10.1.4.34:8000/api",
 	"https://192.168.1.22:8000/api",
 	"https://127.0.0.1:8000/api",
 	"http://10.1.4.34:8000/api",
 	"http://192.168.1.22:8000/api",
-	"http://127.0.0.1:8099/api",
 	"http://127.0.0.1:8000/api",
 ]
 const SESSION_FILE_PATH := "user://auth_session.cfg"
@@ -259,9 +261,9 @@ func async_register(payload: Dictionary) -> Dictionary:
 
 
 func async_ping_server() -> Dictionary:
-	var response: Dictionary = await _request_json("/me", HTTPClient.METHOD_GET)
+	var response: Dictionary = await _request_json("/ping", HTTPClient.METHOD_GET)
 	var status_code: int = int(response.get("status", 0))
-	var is_online: bool = bool(response.get("ok", false)) or status_code == HTTPClient.RESPONSE_UNAUTHORIZED
+	var is_online: bool = bool(response.get("ok", false))
 	return {
 		"online": is_online,
 		"status": status_code,
@@ -589,6 +591,7 @@ func _build_game_data_snapshot(bindings_snapshot: Dictionary = {}) -> Dictionary
 	game_data["settings"] = _capture_settings_state()
 	game_data["inventory"] = _capture_inventory_state()
 	game_data["progression"] = _capture_progression_state()
+	game_data["miniGames"] = _capture_mini_games_state()
 	game_data["saveMeta"] = _create_save_meta()
 
 	if not bindings_snapshot.is_empty():
@@ -703,6 +706,7 @@ func _capture_world_state() -> Dictionary:
 
 func _apply_game_data(game_data: Dictionary) -> void:
 	_apply_world_state(game_data.get("worldState", {}))
+	_apply_mini_games_state(game_data.get("miniGames", {}))
 	_apply_settings_state(game_data.get("settings", {}))
 	_apply_input_bindings_from_game_data(game_data)
 
@@ -733,6 +737,12 @@ func _apply_world_state(world_state: Variant) -> void:
 		var enemy_states: Variant = world_state_dict.get("enemyStates", {})
 		if typeof(enemy_states) == TYPE_DICTIONARY:
 			GlobalEnemyStates.enemy_states = (enemy_states as Dictionary).duplicate(true)
+
+
+func _apply_mini_games_state(mini_games_state: Variant) -> void:
+	if GlobalMiniGames == null or not GlobalMiniGames.has_method("apply_state"):
+		return
+	GlobalMiniGames.apply_state(mini_games_state)
 
 
 func _apply_input_bindings_from_game_data(game_data: Dictionary) -> void:
@@ -850,6 +860,12 @@ func _capture_progression_state() -> Dictionary:
 		"currentQuest": current_quest,
 		"flags": flags,
 	}
+
+
+func _capture_mini_games_state() -> Dictionary:
+	if GlobalMiniGames == null or not GlobalMiniGames.has_method("get_state"):
+		return {}
+	return GlobalMiniGames.get_state()
 
 
 func _apply_settings_state(settings_state: Variant) -> void:

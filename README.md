@@ -35,6 +35,8 @@ Le jeu est compose de plusieurs scenes Godot : ile principale, deuxieme ile, mai
 
 ## Architecture
 
+Livrable attendu : Produire le schéma d’architecture => communications entre le front, le back, la BDD et le moteur de jeu.
+
 ```mermaid
 flowchart TB
     subgraph Godot["Godot/"]

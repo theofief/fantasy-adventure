@@ -12,6 +12,7 @@ return [
         '/admin/login' => [[['_route' => 'admin_login', '_controller' => 'App\\Controller\\AdminController::login'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/admin/logout' => [[['_route' => 'admin_logout', '_controller' => 'App\\Controller\\AdminController::logout'], null, ['POST' => 0, 'GET' => 1], null, false, false, null]],
         '/admin/users' => [[['_route' => 'admin_user_create', '_controller' => 'App\\Controller\\AdminController::createUser'], null, ['POST' => 0], null, false, false, null]],
+        '/api/ping' => [[['_route' => 'api_ping', '_controller' => 'App\\Controller\\Api\\AuthController::ping'], null, ['GET' => 0], null, false, false, null]],
         '/api/register' => [[['_route' => 'api_register', '_controller' => 'App\\Controller\\Api\\AuthController::register'], null, ['POST' => 0], null, false, false, null]],
         '/api/login' => [[['_route' => 'api_login', '_controller' => 'App\\Controller\\Api\\AuthController::login'], null, ['POST' => 0], null, false, false, null]],
         '/api/me' => [[['_route' => 'api_me', '_controller' => 'App\\Controller\\Api\\AuthController::me'], null, ['GET' => 0], null, false, false, null]],
@@ -20,6 +21,8 @@ return [
             [['_route' => 'api_save_patch', '_controller' => 'App\\Controller\\Api\\AuthController::patchSave'], null, ['PATCH' => 0], null, false, false, null],
         ],
         '/' => [[['_route' => 'landing_index', '_controller' => 'App\\Controller\\LandingController::index'], null, ['GET' => 0], null, false, false, null]],
+        '/site.webmanifest' => [[['_route' => 'site_webmanifest', '_controller' => 'App\\Controller\\LandingController::webmanifest'], null, ['GET' => 0], null, false, false, null]],
+        '/manifest.webmanifest' => [[['_route' => 'site_webmanifest_alias', '_controller' => 'App\\Controller\\LandingController::webmanifest'], null, ['GET' => 0], null, false, false, null]],
         '/play' => [[['_route' => 'game_web_index', '_controller' => 'App\\Controller\\LandingController::play'], null, ['GET' => 0], null, false, false, null]],
     ],
     [ // $regexpList

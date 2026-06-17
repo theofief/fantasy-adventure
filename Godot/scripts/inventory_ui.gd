@@ -12,6 +12,7 @@ const INVENTORY_LAYER := 120
 
 const PLAYER_TEXTURE := preload("res://assets/tiles/Player/Player.png")
 const COIN_TEXTURE := preload("res://assets/tiles/platformer/coin.png")
+const HUD_FONT := preload("res://assets/fonts/PixelOperator8.ttf")
 const PIXEL_FONT := preload("res://assets/fonts/PixelOperator8-Bold.ttf")
 const BLUR_SHADER := preload("res://Shaders/pause_menu.gdshader")
 
@@ -454,7 +455,7 @@ func _build_bottom_content() -> Control:
 	hp_row.add_child(hp_icon)
 
 	_hp_count_label = Label.new()
-	_hp_count_label.add_theme_font_override("font", PIXEL_FONT)
+	_hp_count_label.add_theme_font_override("font", HUD_FONT)
 	_hp_count_label.add_theme_font_size_override("font_size", 12)
 	_hp_count_label.add_theme_color_override("font_color", Color.BLACK)
 	hp_row.add_child(_hp_count_label)
@@ -477,7 +478,7 @@ func _build_bottom_content() -> Control:
 	coin_row.add_child(coin_icon)
 
 	_coin_count_label = Label.new()
-	_coin_count_label.add_theme_font_override("font", PIXEL_FONT)
+	_coin_count_label.add_theme_font_override("font", HUD_FONT)
 	_coin_count_label.add_theme_font_size_override("font_size", 12)
 	_coin_count_label.add_theme_color_override("font_color", Color.BLACK)
 	coin_row.add_child(_coin_count_label)

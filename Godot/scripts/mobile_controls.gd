@@ -26,6 +26,14 @@ const ACTION_BUTTONS := [
 	{"label": "CRH", "action": "ui_shift"},
 ]
 
+@export var show_attack_button := true
+@export var show_interact_button := true
+@export var show_jump_button := true
+@export var show_crouch_button := true
+@export var show_map_button := true
+@export var show_bag_button := true
+@export var force_show_controls := false
+
 var _root: Control
 var _joystick_base: Panel
 var _joystick_knob: Panel
@@ -151,7 +159,12 @@ func _build_buttons() -> void:
 	_button_root.add_child(grid)
 
 	for config in ACTION_BUTTONS:
+		var action := str(config["action"])
+		if not _should_show_action_button(action):
+			continue
 		grid.add_child(_make_action_button(str(config["label"]), str(config["action"]), BUTTON_SIZE, 17))
+
+	_button_root.visible = grid.get_child_count() > 0
 
 
 func _build_top_buttons() -> void:
@@ -175,7 +188,8 @@ func _build_top_buttons() -> void:
 	_top_button_root.add_child(row)
 
 	row.add_child(_make_action_button("II", "esc", TOP_BUTTON_SIZE, 18))
-	row.add_child(_make_action_button("MAP", "ui_toggle_map", TOP_BUTTON_SIZE, 14))
+	if show_map_button:
+		row.add_child(_make_action_button("MAP", "ui_toggle_map", TOP_BUTTON_SIZE, 14))
 
 
 func _build_bag_button() -> void:
@@ -192,7 +206,23 @@ func _build_bag_button() -> void:
 	_bag_button_root.offset_bottom = -HUD_HOTBAR_BOTTOM_MARGIN
 	_root.add_child(_bag_button_root)
 
-	_bag_button_root.add_child(_make_action_button("BAG", "ui_inventory", BAG_BUTTON_SIZE, 13, true))
+	if show_bag_button:
+		_bag_button_root.add_child(_make_action_button("BAG", "ui_inventory", BAG_BUTTON_SIZE, 13, true))
+	else:
+		_bag_button_root.visible = false
+
+
+func _should_show_action_button(action: String) -> bool:
+	match action:
+		"ui_hit":
+			return show_attack_button
+		"ui_interact":
+			return show_interact_button
+		"ui_space":
+			return show_jump_button
+		"ui_shift":
+			return show_crouch_button
+	return true
 
 
 func _make_action_button(label: String, action: String, minimum_size: Vector2, font_size: int, hotbar_style: bool = false) -> Button:
@@ -437,6 +467,8 @@ func _toggle_inventory_directly() -> bool:
 
 
 func _should_show_controls() -> bool:
+	if force_show_controls:
+		return true
 	if OS.has_feature("android") or OS.has_feature("ios") or OS.has_feature("mobile"):
 		return true
 	if OS.has_feature("web"):

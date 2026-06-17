@@ -19,6 +19,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api')]
 class AuthController extends AbstractController
 {
+    #[Route('/ping', name: 'api_ping', methods: ['GET'])]
+    public function ping(): JsonResponse
+    {
+        return $this->json([
+            'ok' => true,
+            'service' => 'fantasy-adventure-api',
+        ]);
+    }
+
     #[Route('/register', name: 'api_register', methods: ['POST'])]
     public function register(
         Request $request,

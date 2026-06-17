@@ -17,7 +17,7 @@ func _ready() -> void:
 		AuthManager.commit_scene_checkpoint()
 	if not TransitionChangeManager.is_transitioning:
 		TransitionChangeManager.unfreeze_player(player)
-	_ensure_mobile_controls()
+	_ensure_house_gameplay_ui()
 	
 func on_transition_done():
 	TransitionChangeManager.unfreeze_player($player)
@@ -44,3 +44,13 @@ func _ensure_mobile_controls() -> void:
 	mobile_controls.name = "MobileControls"
 	mobile_controls.set_script(mobile_controls_script)
 	add_child(mobile_controls)
+
+
+func _ensure_house_gameplay_ui() -> void:
+	var gameplay_ui_helper := load("res://scripts/gameplay_ui_helper.gd")
+	if gameplay_ui_helper != null:
+		var helper = gameplay_ui_helper.new()
+		if helper != null and helper.has_method("ensure_house_gameplay_ui"):
+			helper.ensure_house_gameplay_ui(self)
+			return
+	_ensure_mobile_controls()

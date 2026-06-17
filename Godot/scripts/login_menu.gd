@@ -36,6 +36,15 @@ var server_settings_panel: PanelContainer
 var server_url_edit: LineEdit
 var server_apply_button: Button
 var server_reset_button: Button
+var register_date_container: VBoxContainer
+var register_date_label: Label
+var birth_day_option: OptionButton
+var birth_month_option: OptionButton
+var birth_year_option: OptionButton
+var _birth_day: int = 1
+var _birth_month: int = 1
+var _birth_year: int = 2000
+var _updating_birth_options := false
 
 
 func _ready() -> void:
@@ -51,6 +60,7 @@ func _ready() -> void:
 	offline_button.pressed.connect(_on_offline_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 
+	_build_register_date_selector()
 	_setup_mobile_keyboard_fields()
 	_build_server_settings_ui()
 	email_login.text = AuthManager.email
@@ -101,6 +111,7 @@ func _on_login_pressed() -> void:
 
 
 func _on_register_pressed() -> void:
+	_update_register_date_text()
 	var email := register_email.text.strip_edges()
 	var password := register_password.text
 	var password_confirm := register_password_confirm.text
@@ -236,7 +247,7 @@ func _build_server_settings_ui() -> void:
 	panel_margin.add_child(panel_box)
 
 	server_url_edit = LineEdit.new()
-	server_url_edit.placeholder_text = "192.168.1.22:8000"
+	server_url_edit.placeholder_text = "10.1.4.34:8099"
 	server_url_edit.text = AuthManager.get_primary_api_base_url()
 	panel_box.add_child(server_url_edit)
 	_register_mobile_keyboard_field(server_url_edit)
@@ -257,6 +268,142 @@ func _build_server_settings_ui() -> void:
 	form_container.add_child(server_container)
 	form_container.move_child(server_container, insert_index)
 	_refresh_server_summary()
+
+
+func _build_register_date_selector() -> void:
+	if register_date == null or register_date_container != null:
+		return
+
+	register_date.visible = false
+	register_date.focus_mode = Control.FOCUS_NONE
+
+	register_date_container = VBoxContainer.new()
+	register_date_container.name = "RegisterDateSelector"
+	register_date_container.add_theme_constant_override("separation", 5)
+
+	register_date_label = Label.new()
+	register_date_label.text = tr("Date de naissance")
+	register_date_container.add_child(register_date_label)
+
+	var selector_row := HBoxContainer.new()
+	selector_row.add_theme_constant_override("separation", 8)
+	register_date_container.add_child(selector_row)
+
+	birth_day_option = _create_birth_option()
+	birth_month_option = _create_birth_option()
+	birth_year_option = _create_birth_option()
+
+	selector_row.add_child(birth_day_option)
+	selector_row.add_child(birth_month_option)
+	selector_row.add_child(birth_year_option)
+
+	var current_date := Time.get_date_dict_from_system()
+	_birth_year = int(current_date.get("year", 2018)) - 18
+	_birth_month = 1
+	_birth_day = 1
+
+	_populate_birth_options()
+	birth_day_option.item_selected.connect(_on_birth_day_selected)
+	birth_month_option.item_selected.connect(_on_birth_month_selected)
+	birth_year_option.item_selected.connect(_on_birth_year_selected)
+	_update_register_date_text()
+
+	var parent := register_date.get_parent()
+	var insert_index := register_date.get_index() + 1
+	parent.add_child(register_date_container)
+	parent.move_child(register_date_container, insert_index)
+
+
+func _create_birth_option() -> OptionButton:
+	var option := OptionButton.new()
+	option.focus_mode = Control.FOCUS_ALL
+	option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return option
+
+
+func _populate_birth_options() -> void:
+	_updating_birth_options = true
+	var max_day := _days_in_month(_birth_year, _birth_month)
+	_birth_day = clampi(_birth_day, 1, max_day)
+
+	birth_day_option.clear()
+	for day in range(1, max_day + 1):
+		birth_day_option.add_item("%02d" % day, day)
+		if day == _birth_day:
+			birth_day_option.select(day - 1)
+
+	birth_month_option.clear()
+	var month_names: Array[String] = [
+		tr("Janvier"),
+		tr("Fevrier"),
+		tr("Mars"),
+		tr("Avril"),
+		tr("Mai"),
+		tr("Juin"),
+		tr("Juillet"),
+		tr("Aout"),
+		tr("Septembre"),
+		tr("Octobre"),
+		tr("Novembre"),
+		tr("Decembre"),
+	]
+	for month in range(1, 13):
+		birth_month_option.add_item(month_names[month - 1], month)
+		if month == _birth_month:
+			birth_month_option.select(month - 1)
+
+	birth_year_option.clear()
+	var current_year := int(Time.get_date_dict_from_system().get("year", 2026))
+	for year in range(current_year - 120, current_year - 5):
+		birth_year_option.add_item(str(year), year)
+		if year == _birth_year:
+			birth_year_option.select(birth_year_option.get_item_count() - 1)
+
+	_updating_birth_options = false
+
+
+func _on_birth_day_selected(index: int) -> void:
+	if _updating_birth_options:
+		return
+	_birth_day = birth_day_option.get_item_id(index)
+	_update_register_date_text()
+
+
+func _on_birth_month_selected(index: int) -> void:
+	if _updating_birth_options:
+		return
+	_birth_month = birth_month_option.get_item_id(index)
+	_populate_birth_options()
+	_update_register_date_text()
+
+
+func _on_birth_year_selected(index: int) -> void:
+	if _updating_birth_options:
+		return
+	_birth_year = birth_year_option.get_item_id(index)
+	_populate_birth_options()
+	_update_register_date_text()
+
+
+func _update_register_date_text() -> void:
+	if register_date == null:
+		return
+	register_date.text = "%04d-%02d-%02d" % [_birth_year, _birth_month, _birth_day]
+
+
+func _days_in_month(year: int, month: int) -> int:
+	match month:
+		1, 3, 5, 7, 8, 10, 12:
+			return 31
+		4, 6, 9, 11:
+			return 30
+		2:
+			return 29 if _is_leap_year(year) else 28
+	return 31
+
+
+func _is_leap_year(year: int) -> bool:
+	return year % 400 == 0 or (year % 4 == 0 and year % 100 != 0)
 
 
 func _refresh_server_summary() -> void:
@@ -397,7 +544,11 @@ func _refresh_translated_ui() -> void:
 	register_password_confirm.placeholder_text = tr("Confirmer le mot de passe")
 	register_nom.placeholder_text = tr("Nom")
 	register_prenom.placeholder_text = tr("Prenom")
-	register_date.placeholder_text = tr("Date de naissance (YYYY-MM-DD)")
+	register_date.placeholder_text = tr("Date de naissance")
+	if register_date_label != null:
+		register_date_label.text = tr("Date de naissance")
+	if birth_month_option != null:
+		_populate_birth_options()
 	register_pseudo.placeholder_text = tr("Pseudo")
 	register_button.text = tr("Creer un compte")
 	offline_mode_label.text = tr("Mode hors ligne")
@@ -416,6 +567,12 @@ func _set_loading(is_loading: bool) -> void:
 	login_button.disabled = is_loading
 	register_button.disabled = is_loading
 	quit_button.disabled = is_loading
+	if birth_day_option != null:
+		birth_day_option.disabled = is_loading
+	if birth_month_option != null:
+		birth_month_option.disabled = is_loading
+	if birth_year_option != null:
+		birth_year_option.disabled = is_loading
 	if server_apply_button != null:
 		server_apply_button.disabled = is_loading
 	if server_reset_button != null:

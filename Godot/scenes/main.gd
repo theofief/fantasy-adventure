@@ -2,6 +2,7 @@
 extends Node
 
 const HOUSE_LABELS := [
+	{"text": "Hub", "position": Vector2(72, 72), "size": Vector2(220, 180), "label_offset": Vector2(0, -125)},
 	{"text": "Boutique", "position": Vector2(-384, -105), "size": Vector2(190, 145)},
 	{"text": "Maison classique", "position": Vector2(-320, -409), "size": Vector2(190, 145)},
 	{"text": "Auberge", "position": Vector2(-80, 167), "size": Vector2(190, 145)},
@@ -16,6 +17,7 @@ const HOUSE_LABELS := [
 	{"text": "Tour de garde", "position": Vector2(208, -344), "size": Vector2(190, 145)},
 	{"text": "Guilde", "position": Vector2(608, -191), "size": Vector2(190, 145)},
 ]
+const HUD_FONT := preload("res://assets/fonts/PixelOperator8.ttf")
 
 @onready var player = $player
 @onready var player_spawn_point: Marker2D = $PlayerSpawnPoint
@@ -51,6 +53,7 @@ func _ready() -> void:
 	_ensure_map_layer()
 	_ensure_mobile_controls()
 	_ensure_house_labels()
+	_apply_gameplay_mouse_mode()
 
 
 func _process(delta: float) -> void:
@@ -66,8 +69,16 @@ func _process(delta: float) -> void:
 
 func on_transition_done() -> void:
 	TransitionChangeManager.unfreeze_player(player)
+	_apply_gameplay_mouse_mode()
 	if AuthManager != null:
 		AuthManager.commit_scene_checkpoint()
+
+
+func _apply_gameplay_mouse_mode() -> void:
+	if UIManager != null and UIManager.menu_open:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		return
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 
 func _exit_tree() -> void:
@@ -116,6 +127,7 @@ func _ensure_game_hud() -> void:
 	coins_label.offset_top = 42.0
 	coins_label.offset_right = 122.0
 	coins_label.offset_bottom = 65.0
+	coins_label.add_theme_font_override("font", HUD_FONT)
 	coins_label.text = "Coins:"
 	var coin_script := load("res://scripts/CoinUI.gd")
 	if coin_script != null:
