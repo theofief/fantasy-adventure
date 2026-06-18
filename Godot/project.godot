@@ -108,6 +108,10 @@ ui_inventory={
 locale/translations=PackedStringArray("res://l10n/en.po", "res://l10n/fr.po", "res://l10n/es.po")
 locale/translations_pot_files=PackedStringArray("res://dialogues/starter.dialogue", "res://dialogues/starter_fr.dialogue", "res://dialogues/starter_es.dialogue")
 
+[layer_names]
+
+2d_physics/layer_8="Marchand"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
