@@ -172,6 +172,81 @@ msgstr "Volver al menu"
 msgid "Press \"E\""
 msgstr "Pulsa \"E\""
 
+msgid "Welcome to the shop!"
+msgstr "Bienvenido a la tienda!"
+
+msgid "Recommencer le jeu"
+msgstr "Reiniciar partida"
+
+msgid "Clique encore sur Recommencer le jeu pour confirmer."
+msgstr "Haz clic otra vez en Reiniciar partida para confirmar."
+
+msgid "Sauvegarde reinitialisee."
+msgstr "Partida reiniciada."
+
+msgid "Sons"
+msgstr "Sonido"
+
+msgid "Touches"
+msgstr "Controles"
+
+msgid "Divers"
+msgstr "Otros"
+
+msgid "Graphismes"
+msgstr "Graficos"
+
+msgid "Volume general"
+msgstr "Volumen general"
+
+msgid "Musique"
+msgstr "Musica"
+
+msgid "Effets sonores"
+msgstr "Efectos de sonido"
+
+msgid "Couper tous les sons"
+msgstr "Silenciar todos los sonidos"
+
+msgid "Regle la musique, les bruitages et le volume general"
+msgstr "Ajusta musica, efectos y volumen general"
+
+msgid "Les changements de son sont appliques immediatement."
+msgstr "Los cambios de sonido se aplican inmediatamente."
+
+msgid "Parametres divers du jeu et de la connexion"
+msgstr "Otros ajustes del juego y la conexion"
+
+msgid "Ces options sont sauvegardees avec ton profil."
+msgstr "Estas opciones se guardan con tu perfil."
+
+msgid "Plein ecran"
+msgstr "Pantalla completa"
+
+msgid "Synchronisation verticale"
+msgstr "Sincronizacion vertical"
+
+msgid "Limite FPS"
+msgstr "Limite de FPS"
+
+msgid "Illimite"
+msgstr "Ilimitado"
+
+msgid "Ajuste l'affichage et les performances"
+msgstr "Ajusta la pantalla y el rendimiento"
+
+msgid "Certains changements peuvent dependre du navigateur ou de l'appareil."
+msgstr "Algunos cambios pueden depender del navegador o del dispositivo."
+
+msgid "Sons restaures par defaut."
+msgstr "Sonidos restaurados por defecto."
+
+msgid "Graphismes restaures par defaut."
+msgstr "Graficos restaurados por defecto."
+
+msgid "Parametres divers restaures par defaut."
+msgstr "Otros ajustes restaurados por defecto."
+
 msgid "Renseigne ton profil local pour lancer une session sans serveur"
 msgstr "Completa tu perfil local para iniciar una sesion sin servidor"
 

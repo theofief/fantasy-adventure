@@ -9,6 +9,11 @@ const JUMP_VELOCITY = -300.0
 var is_crouching := false
 
 
+func _exit_tree() -> void:
+	if AudioManager != null:
+		AudioManager.stop_walk()
+
+
 func _physics_process(delta: float) -> void:
 
 	# Gravité
@@ -18,6 +23,9 @@ func _physics_process(delta: float) -> void:
 	# Saut
 	if Input.is_action_just_pressed("ui_space") and is_on_floor() and not is_crouching:
 		velocity.y = JUMP_VELOCITY
+		if AudioManager != null:
+			AudioManager.stop_walk()
+			AudioManager.play_jump()
 		sprite.play("jump")
 
 	# Accroupissement
@@ -67,8 +75,21 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 
+	_update_walk_sound(direction)
+
 	move_and_slide()
 
 func disable():
 	set_physics_process(false)
 	velocity = Vector2.ZERO
+	if AudioManager != null:
+		AudioManager.stop_walk()
+
+
+func _update_walk_sound(direction: float) -> void:
+	if AudioManager == null:
+		return
+	if direction != 0.0 and is_on_floor() and not is_crouching:
+		AudioManager.start_walk()
+	else:
+		AudioManager.stop_walk()

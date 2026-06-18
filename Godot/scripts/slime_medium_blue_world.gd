@@ -38,13 +38,16 @@ func _ready() -> void:
 	if AuthManager != null and AuthManager.has_method("apply_saved_game_state"):
 		AuthManager.apply_saved_game_state()
 
+	call_deferred("_sync_y_sort_owner")
 	_locked_position = global_position
 	current_hearts = max_hearts
-	_scene_path = get_parent().scene_file_path
+	_scene_path = _resolve_scene_path()
 	if GlobalEnemyStates != null and GlobalEnemyStates.has_method("get_enemy_key"):
 		_enemy_key = GlobalEnemyStates.get_enemy_key(_scene_path, global_position)
 	else:
 		_enemy_key = "%s::%d_%d" % [_scene_path, roundi(global_position.x), roundi(global_position.y)]
+	if _scene_path.ends_with("mystic_island.tscn"):
+		_enemy_key = "%s::mystic_v2::%s::%d_%d" % [_scene_path, name, roundi(global_position.x / 10.0) * 10, roundi(global_position.y / 10.0) * 10]
 	_detect_map_bounds()
 	
 	# 🔍 Vérifier si ce slime a déjà été tué
@@ -56,11 +59,25 @@ func _ready() -> void:
 	var saved_state := GlobalEnemyStates.get_enemy_state_by_key(_enemy_key)
 	if not saved_state.is_empty():
 		_apply_saved_state(saved_state)
+		_sync_y_sort_owner()
 	
 	if not detection_area.body_entered.is_connected(_on_detection_area_body_entered):
 		detection_area.body_entered.connect(_on_detection_area_body_entered)
 	if not detection_area.body_exited.is_connected(_on_detection_area_body_exited):
 		detection_area.body_exited.connect(_on_detection_area_body_exited)
+
+func _resolve_scene_path() -> String:
+	var current_scene := get_tree().current_scene
+	if current_scene != null and current_scene.scene_file_path != "":
+		return current_scene.scene_file_path
+
+	var node := get_parent()
+	while node != null:
+		if node.scene_file_path != "":
+			return node.scene_file_path
+		node = node.get_parent()
+
+	return ""
 
 # ======================
 # ❤️ DAMAGE SYSTEM
@@ -186,6 +203,8 @@ func _disable_dead_slime() -> void:
 
 
 func _starter_slime_objective_is_completed() -> bool:
+	if _scene_path.ends_with("mystic_island.tscn"):
+		return false
 	if DialogueVariables != null and int(DialogueVariables.slimes_killed) >= 5:
 		return true
 	if AuthManager == null:
@@ -264,6 +283,7 @@ func _physics_process(delta: float) -> void:
 		animated_sprite.play("idle")
 		move_and_slide()
 		_clamp_to_map_bounds()
+		_sync_y_sort_owner()
 		# ⚔️ Mais continuer à attaquer s'il est assez proche
 		if target and global_position.distance_to(target.global_position) <= ATTACK_DISTANCE:
 			if attack_timer <= 0.0:
@@ -286,6 +306,7 @@ func _physics_process(delta: float) -> void:
 		velocity = knockback_velocity
 		move_and_slide()
 		_clamp_to_map_bounds()
+		_sync_y_sort_owner()
 		animated_sprite.play("idle")
 		return
 	
@@ -296,11 +317,13 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.lerp(dir * speed, 0.2) + knockback_velocity
 		move_and_slide()
 		_clamp_to_map_bounds()
+		_sync_y_sort_owner()
 		animated_sprite.play("walk")
 	else:
 		velocity = knockback_velocity
 		move_and_slide()
 		_clamp_to_map_bounds()
+		_sync_y_sort_owner()
 		animated_sprite.play("attack")
 		if attack_timer <= 0.0:
 			attack_timer = attack_cooldown
@@ -311,7 +334,18 @@ func _idle() -> void:
 	velocity = knockback_velocity
 	move_and_slide()
 	_clamp_to_map_bounds()
+	_sync_y_sort_owner()
 	animated_sprite.play("idle")
+
+
+func _sync_y_sort_owner() -> void:
+	var sort_owner := get_parent() as Node2D
+	if sort_owner == null or not sort_owner.name.begins_with("slime"):
+		return
+
+	var body_global_position := global_position
+	sort_owner.global_position = body_global_position
+	global_position = body_global_position
 
 func _on_detection_area_body_entered(body: Node2D) -> void:
 	if (body is CharacterBody2D and body != self) and (body.name == "player" or (body.get_parent() and body.get_parent().name == "player")):

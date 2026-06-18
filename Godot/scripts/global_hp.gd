@@ -6,6 +6,9 @@ var max_hp: int = 3
 signal hp_changed(new_amount)
 
 func remove_hp(amount: int):
+	if amount > 0 and AudioManager != null:
+		AudioManager.play_hurt()
+
 	hp -= amount
 
 	if hp <= 0:

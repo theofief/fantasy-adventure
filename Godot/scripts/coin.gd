@@ -1,7 +1,7 @@
 extends Area2D
 
 @onready var animation_player = $AnimationPlayer
-@onready var pickup_sound = $AudioStreamPlayer
+@onready var pickup_sound = $PickupSound
 
 var collected := false
 

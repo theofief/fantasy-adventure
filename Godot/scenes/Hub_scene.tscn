@@ -26,6 +26,12 @@
 [ext_resource type="Texture2D" uid="uid://2n30bwo46mhr" path="res://assets/tiles/Cute_Fantasy/Buildings/House_Decor/Drawers.png" id="24_iuq7b"]
 [ext_resource type="Texture2D" uid="uid://djleknhrgx2w3" path="res://assets/tiles/Cute_Fantasy/Buildings/House_Decor/Furnace_Anim.png" id="25_2lpl6"]
 [ext_resource type="Texture2D" uid="uid://crgbc6holebm4" path="res://assets/tiles/Cute_Fantasy/Buildings/House_Decor/Golden_Chest_Anim.png" id="26_drfsj"]
+[ext_resource type="PackedScene" uid="uid://dcrrypx65a00a" path="res://scenes/NPCs/npc_shop_1.tscn" id="27_prat2"]
+[ext_resource type="Script" path="res://scripts/shop_npc.gd" id="28_od01u"]
+[ext_resource type="FontFile" uid="uid://crft7xjpq21ha" path="res://assets/fonts/PixelOperator8.ttf" id="29_atxqg"]
+[ext_resource type="Resource" path="res://dialogues/shop.dialogue" id="30_shop"]
+[ext_resource type="Resource" path="res://dialogues/shop_fr.dialogue" id="31_shopfr"]
+[ext_resource type="Resource" path="res://dialogues/shop_es.dialogue" id="32_shopes"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_3sads"]
 texture = ExtResource("1_amgpj")
@@ -3137,6 +3143,9 @@ sources/16 = SubResource("TileSetAtlasSource_h5pu4")
 sources/17 = SubResource("TileSetAtlasSource_r076g")
 sources/18 = SubResource("TileSetAtlasSource_1ckym")
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kjvph"]
+size = Vector2(150, 110)
+
 [node name="HubScene" type="Node2D" unique_id=845659713]
 script = ExtResource("1_bn4qx")
 
@@ -3156,5 +3165,28 @@ position = Vector2(1, 103)
 [node name="TileMapLayer2" type="TileMapLayer" parent="." unique_id=110107174]
 tile_map_data = PackedByteArray("AAD4//n/AgABAAAAAAD4//r/AgABAAEAAAD5//n/AgACAAAAAAD5//r/AgACAAEAAAD6//n/AgAEAAAAAAD6//r/AgAEAAEAAAD7//n/AgAFAAAAAAD7//r/AgAFAAEAAAD8//n/AgAKAAAAAAD8//r/AgAKAAEAAAD9//n/AgALAAAAAAD9//r/AgALAAEAAAD+//n/AgAGAAAAAAD+//r/AgAGAAEAAAABAPn/AgABAAAAAAABAPr/AgABAAEAAAACAPn/AgACAAAAAAACAPr/AgACAAEAAAAEAPn/AgAHAAAAAAAEAPr/AgAHAAEAAAAFAPn/AgAIAAAAAAAFAPr/AgAIAAEAAAD+//7/BwABAAIAAAD9//7/BwABAAIAAAD///7/BwABAAIAAAAAAP7/BwABAAIAAAABAP7/BwABAAIAAAACAP7/BwABAAIAAAADAP7/BwABAAIAAAD3//7/BwAAAAIAAAAHAP7/BwACAAIAAAAGAPn/AgAJAAAAAAAGAPr/AgAJAAEAAAAHAP3/BwACAAEAAAAHAPz/BwACAAEAAAAHAPv/BwACAAEAAAAHAPr/BwACAAEAAAD3//3/BwACAAEAAAD3//z/BwAAAAAAAAD4//7/BwABAAIAAAD5//7/BwABAAIAAAD6//7/BwABAAIAAAD7//7/BwABAAIAAAD8//7/BwABAAIAAAAEAP7/BwABAAIAAAAFAP7/BwABAAIAAAAGAP7/BwABAAIAAAD///r/BwAAAAMAAAAAAPr/BwAAAAMAAAADAPr/BwACAAUAAAAJAPn/CwABAAwAAAAJAPr/CwABAA0AAAD1//n/CwABAAwAAAD1//r/CwABAA0AAAAKAPn/CwAAAAQAAAAKAPr/CwAAAAUAAAAEAAEAEAADAAIAAAAEAAIAEAADAAMAAAAFAAEAEAAEAAIAAAAFAAIAEAAEAAMAAAAGAAEAEAAFAAIAAAAGAAIAEAAFAAMAAAD5/wEAAwAEAAYAAAD5/wIAAwAEAAcAAAD5/wMAAwAKAAcAAAD6/wEAEAAIAAAAAAD6/wIAEAAIAAEAAAD7/wEAEAAJAAAAAAD7/wIAEAAJAAEAAAD8/wEAAwAJAAYAAAD8/wIAAwAJAAcAAAAGAP//BAAAAAAAAAD3//r/BAAAAAAAAAAIAP3/CwACAAYAAAAIAP7/CwACAAcAAAD2//3/DwAAAAgAAAD2//7/DwAAAAkAAAD//wEAEAADAAIAAAD//wIAEAADAAMAAAAAAAEAEAAEAAIAAAAAAAIAEAAEAAMAAAABAAEAEAAFAAIAAAABAAIAEAAFAAMAAAD/////AwAFAAoAAAD//wAAAwAFAAsAAAAAAP//AwAGAAoAAAAAAAAAAwAGAAsAAAABAAAAAwALAAsAAAAEAP//AwABAA4AAAAEAAAAAwABAA8AAAALAAYACwACAAYAAAALAAcACwACAAcAAAA=")
 tile_set = SubResource("TileSet_4qq3j")
+
+[node name="NpcShop1" parent="." unique_id=1288858383 instance=ExtResource("27_prat2")]
+y_sort_enabled = true
+position = Vector2(-51, -36)
+
+[node name="Area2D" type="Area2D" parent="NpcShop1" unique_id=396058267]
+script = ExtResource("28_od01u")
+dialogue_resource = ExtResource("30_shop")
+dialogue_resource_fr = ExtResource("31_shopfr")
+dialogue_resource_es = ExtResource("32_shopes")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NpcShop1/Area2D" unique_id=412845197]
+position = Vector2(0, -8)
+shape = SubResource("RectangleShape2D_kjvph")
+
+[node name="Label" type="Label" parent="NpcShop1/Area2D" unique_id=477883968]
+y_sort_enabled = true
+offset_left = -34.0
+offset_top = -46.0
+offset_right = 38.0
+offset_bottom = -23.0
+theme_override_fonts/font = ExtResource("29_atxqg")
+text = "Press \"E\""
 
 [connection signal="body_entered" from="AreaExit" to="." method="_on_area_exit_body_entered"]

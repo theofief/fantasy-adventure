@@ -172,6 +172,81 @@ msgstr "Retour au menu"
 msgid "Press \"E\""
 msgstr "Appuie sur \"E\""
 
+msgid "Welcome to the shop!"
+msgstr "Bienvenue dans la boutique !"
+
+msgid "Recommencer le jeu"
+msgstr "Recommencer le jeu"
+
+msgid "Clique encore sur Recommencer le jeu pour confirmer."
+msgstr "Clique encore sur Recommencer le jeu pour confirmer."
+
+msgid "Sauvegarde reinitialisee."
+msgstr "Sauvegarde reinitialisee."
+
+msgid "Sons"
+msgstr "Sons"
+
+msgid "Touches"
+msgstr "Touches"
+
+msgid "Divers"
+msgstr "Divers"
+
+msgid "Graphismes"
+msgstr "Graphismes"
+
+msgid "Volume general"
+msgstr "Volume general"
+
+msgid "Musique"
+msgstr "Musique"
+
+msgid "Effets sonores"
+msgstr "Effets sonores"
+
+msgid "Couper tous les sons"
+msgstr "Couper tous les sons"
+
+msgid "Regle la musique, les bruitages et le volume general"
+msgstr "Regle la musique, les bruitages et le volume general"
+
+msgid "Les changements de son sont appliques immediatement."
+msgstr "Les changements de son sont appliques immediatement."
+
+msgid "Parametres divers du jeu et de la connexion"
+msgstr "Parametres divers du jeu et de la connexion"
+
+msgid "Ces options sont sauvegardees avec ton profil."
+msgstr "Ces options sont sauvegardees avec ton profil."
+
+msgid "Plein ecran"
+msgstr "Plein ecran"
+
+msgid "Synchronisation verticale"
+msgstr "Synchronisation verticale"
+
+msgid "Limite FPS"
+msgstr "Limite FPS"
+
+msgid "Illimite"
+msgstr "Illimite"
+
+msgid "Ajuste l'affichage et les performances"
+msgstr "Ajuste l'affichage et les performances"
+
+msgid "Certains changements peuvent dependre du navigateur ou de l'appareil."
+msgstr "Certains changements peuvent dependre du navigateur ou de l'appareil."
+
+msgid "Sons restaures par defaut."
+msgstr "Sons restaures par defaut."
+
+msgid "Graphismes restaures par defaut."
+msgstr "Graphismes restaures par defaut."
+
+msgid "Parametres divers restaures par defaut."
+msgstr "Parametres divers restaures par defaut."
+
 msgid "Renseigne ton profil local pour lancer une session sans serveur"
 msgstr "Renseigne ton profil local pour lancer une session sans serveur"
 

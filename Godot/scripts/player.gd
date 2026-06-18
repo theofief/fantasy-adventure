@@ -47,6 +47,8 @@ func stop_for_transition() -> void:
 	knockback_velocity = Vector2.ZERO
 	is_attacking = false
 	attack_duration_left = 0.0
+	if AudioManager != null:
+		AudioManager.stop_walk()
 	if sprite != null:
 		update_animation(Vector2.ZERO)
 
@@ -58,6 +60,7 @@ func resume_after_transition() -> void:
 func _ready() -> void:
 	sprite_base_position = sprite.position
 	current_hearts = max_hearts
+	call_deferred("_sync_y_sort_owner")
 	var global_hp := get_node_or_null("/root/GlobalHp")
 	if global_hp:
 		current_hearts = global_hp.hp
@@ -72,6 +75,8 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if AudioManager != null:
+		AudioManager.stop_walk()
 	if AuthManager != null and not AuthManager.is_applying_game_state():
 		AuthManager.commit_scene_checkpoint()
 
@@ -98,6 +103,8 @@ func _physics_process(delta: float) -> void:
 	knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 	
 	if not can_move:
+		if AudioManager != null:
+			AudioManager.stop_walk()
 		return
 
 	if Input.is_action_just_pressed("ui_hit") and attack_cooldown_left <= 0.0:
@@ -122,6 +129,8 @@ func _physics_process(delta: float) -> void:
 
 	# SHIFT
 	if Input.is_action_just_pressed("ui_shift") and not is_jumping:
+		if AudioManager != null:
+			AudioManager.stop_walk()
 		is_crouching = !is_crouching
 		if is_crouching:
 			sprite.play("shift")
@@ -139,8 +148,20 @@ func _physics_process(delta: float) -> void:
 
 	velocity = direction * current_speed + knockback_velocity
 	move_and_slide()
+	_sync_y_sort_owner()
 	update_animation(direction)
+	_update_walk_sound(direction)
 	_track_position_for_save()
+
+
+func _sync_y_sort_owner() -> void:
+	var sort_owner := get_parent() as Node2D
+	if sort_owner == null or sort_owner.name != "player":
+		return
+
+	var body_global_position := global_position
+	sort_owner.global_position = body_global_position
+	global_position = body_global_position
 
 # ======================
 # ⚔️ COMBAT SYSTEM
@@ -168,6 +189,8 @@ func player_attack() -> void:
 		return
 	
 	print("🗡️ Attaque joueur")
+	if AudioManager != null:
+		AudioManager.play_attack()
 	
 	is_attacking = true
 	is_hurt = false
@@ -328,6 +351,9 @@ func _track_position_for_save() -> void:
 # ======================
 func start_jump() -> void:
 	is_jumping = true
+	if AudioManager != null:
+		AudioManager.stop_walk()
+		AudioManager.play_jump()
 	sprite.play("jump")
 
 	var tween := create_tween()
@@ -351,6 +377,15 @@ func start_jump() -> void:
 
 	await tween.finished
 	is_jumping = false
+
+
+func _update_walk_sound(direction: Vector2) -> void:
+	if AudioManager == null:
+		return
+	if direction != Vector2.ZERO and not is_jumping and not is_attacking:
+		AudioManager.start_walk()
+	else:
+		AudioManager.stop_walk()
 
 # ======================
 # ANIMATIONS

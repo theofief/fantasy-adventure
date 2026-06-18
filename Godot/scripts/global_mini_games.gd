@@ -44,6 +44,15 @@ func get_state() -> Dictionary:
 	}
 
 
+func reset_progress(sync_save := true) -> void:
+	for key in DEFAULT_KEYS:
+		best_scores[key] = 0
+		runs_played[key] = 0
+	total_coins_earned = 0
+	last_played.clear()
+	_emit_changed(sync_save)
+
+
 func get_best_score(score_key: String) -> int:
 	return int(best_scores.get(score_key, 0))
 

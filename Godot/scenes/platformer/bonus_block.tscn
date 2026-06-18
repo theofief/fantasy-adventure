@@ -52,6 +52,7 @@ target_position = Vector2(0, 14)
 
 [node name="PickupSound" type="AudioStreamPlayer2D" parent="." unique_id=1929464426]
 stream = ExtResource("3_n17ce")
+bus = &"SFX"
 
 [node name="Label" type="Label" parent="." unique_id=607461133]
 offset_left = -51.0

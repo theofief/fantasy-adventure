@@ -982,8 +982,37 @@ HTML;
 
         $locale = (string) ($settings['locale'] ?? 'n/a');
         $autoReconnect = (bool) ($settings['autoReconnect'] ?? false);
+        $audio = $settings['audio'] ?? [];
+        $graphics = $settings['graphics'] ?? [];
 
-        return sprintf('Langue: %s. Reconnexion auto: %s.', $locale, $autoReconnect ? 'oui' : 'non');
+        $audioSummary = 'son n/a';
+        if (is_array($audio)) {
+            $audioSummary = sprintf(
+                'son %s/%s/%s%s',
+                (string) round(((float) ($audio['masterVolume'] ?? 1)) * 100),
+                (string) round(((float) ($audio['musicVolume'] ?? 1)) * 100),
+                (string) round(((float) ($audio['sfxVolume'] ?? 1)) * 100),
+                (bool) ($audio['muted'] ?? false) ? ' muet' : '',
+            );
+        }
+
+        $graphicsSummary = 'graphismes n/a';
+        if (is_array($graphics)) {
+            $graphicsSummary = sprintf(
+                'plein ecran: %s, vsync: %s, fps: %s',
+                (bool) ($graphics['fullscreen'] ?? false) ? 'oui' : 'non',
+                (bool) ($graphics['vsyncEnabled'] ?? false) ? 'oui' : 'non',
+                ((int) ($graphics['fpsLimit'] ?? 0)) > 0 ? (string) ((int) ($graphics['fpsLimit'] ?? 0)) : 'illimite',
+            );
+        }
+
+        return sprintf(
+            'Langue: %s. Reconnexion auto: %s. %s. %s.',
+            $locale,
+            $autoReconnect ? 'oui' : 'non',
+            $audioSummary,
+            $graphicsSummary,
+        );
     }
 
     private function formatSerializedInputEvent(mixed $event): string

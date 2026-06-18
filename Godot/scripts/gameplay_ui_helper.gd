@@ -10,7 +10,17 @@ func ensure_house_gameplay_ui(scene: Node) -> void:
 	_ensure_game_hud(scene)
 	_ensure_inventory_ui(scene)
 	_ensure_pause_menu(scene)
-	_ensure_mobile_controls(scene)
+	_ensure_mobile_controls(scene, false)
+
+
+func ensure_world_gameplay_ui(scene: Node) -> void:
+	if scene == null:
+		return
+	_ensure_game_hud(scene)
+	_ensure_inventory_ui(scene)
+	_ensure_map_layer(scene)
+	_ensure_pause_menu(scene)
+	_ensure_mobile_controls(scene, true)
 
 
 func _ensure_game_hud(scene: Node) -> void:
@@ -70,6 +80,21 @@ func _ensure_inventory_ui(scene: Node) -> void:
 	scene.add_child(inventory_ui)
 
 
+func _ensure_map_layer(scene: Node) -> void:
+	if scene.get_node_or_null("MapLayer") != null:
+		return
+
+	var map_script := load("res://scripts/map_ui.gd")
+	if map_script == null:
+		return
+
+	var map_layer := CanvasLayer.new()
+	map_layer.name = "MapLayer"
+	map_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	map_layer.set_script(map_script)
+	scene.add_child(map_layer)
+
+
 func _ensure_pause_menu(scene: Node) -> void:
 	if scene.find_child("PauseMenu", true, false) != null:
 		return
@@ -82,7 +107,7 @@ func _ensure_pause_menu(scene: Node) -> void:
 	pause_layer.add_child(pause_menu)
 
 
-func _ensure_mobile_controls(scene: Node) -> void:
+func _ensure_mobile_controls(scene: Node, show_map_button: bool) -> void:
 	if scene.get_node_or_null("MobileControls") != null:
 		return
 
@@ -93,7 +118,7 @@ func _ensure_mobile_controls(scene: Node) -> void:
 	var mobile_controls := CanvasLayer.new()
 	mobile_controls.name = "MobileControls"
 	mobile_controls.set_script(mobile_controls_script)
-	mobile_controls.set("show_map_button", false)
+	mobile_controls.set("show_map_button", show_map_button)
 	scene.add_child(mobile_controls)
 
 

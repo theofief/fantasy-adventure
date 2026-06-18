@@ -16,6 +16,7 @@ const SERVER_RECONNECT_CHECK_SECONDS := 8.0
 const REQUEST_TIMEOUT_SECONDS := 5.0
 const SAVE_DEBOUNCE_SECONDS := 1.5
 const SAVE_SCHEMA_VERSION := 1
+const DEFAULT_START_SCENE_PATH := "res://scenes/game.tscn"
 
 var email: String = ""
 var password: String = ""
@@ -365,6 +366,22 @@ func get_current_game_data_snapshot() -> Dictionary:
 	return _get_current_game_data()
 
 
+func reset_game_progress(sync_remote := true) -> void:
+	if _save_debounce_timer != null:
+		_save_debounce_timer.stop()
+
+	_pending_travel_scene_path = ""
+	_pending_profile_game_data.clear()
+	_is_applying_game_state = true
+	_reset_runtime_gameplay_state()
+	var game_data := _build_fresh_game_data_snapshot()
+	_is_applying_game_state = false
+
+	_set_profile_game_data(game_data)
+	if sync_remote and is_logged_in():
+		queue_profile_game_data_sync(game_data)
+
+
 func prepare_scene_travel(scene_path: String) -> void:
 	if scene_path == "":
 		return
@@ -684,6 +701,94 @@ func _set_profile_game_data(game_data: Dictionary) -> void:
 	user_profile["gameData"] = game_data
 	save_session()
 	_write_offline_backup()
+
+
+func _build_fresh_game_data_snapshot() -> Dictionary:
+	var game_data: Dictionary = {
+		"worldState": {
+			"coins": 0,
+			"hp": 3,
+			"maxHp": 3,
+			"slimesKilled": 0,
+			"deadEnemies": {},
+			"enemyStates": {},
+		},
+		"playerState": {
+			"scenePath": DEFAULT_START_SCENE_PATH,
+			"position": {},
+			"lastDirection": {
+				"x": 0,
+				"y": 1,
+			},
+		},
+		"scenePlayerStates": {},
+		"settings": _capture_settings_state(),
+		"inventory": {},
+		"progression": {
+			"currentQuest": "starter",
+			"flags": {},
+		},
+		"miniGames": _build_default_mini_games_state(),
+		"saveMeta": _create_save_meta(),
+	}
+
+	if SettingsManager != null and SettingsManager.has_method("get_bindings_snapshot"):
+		var bindings_snapshot: Dictionary = SettingsManager.get_bindings_snapshot()
+		var bindings: Dictionary = bindings_snapshot.get("bindings", {})
+		if not bindings.is_empty():
+			game_data["inputBindings"] = bindings.duplicate(true)
+			game_data["inputBindingsMeta"] = {
+				"updatedAtUnixMs": int(bindings_snapshot.get("updatedAtUnixMs", 0)),
+				"updatedAtIso": str(bindings_snapshot.get("updatedAtIso", "")),
+			}
+
+	return game_data
+
+
+func _reset_runtime_gameplay_state() -> void:
+	if GlobalCoins != null:
+		GlobalCoins.coins = 0
+		if GlobalCoins.has_signal("coins_changed"):
+			GlobalCoins.emit_signal("coins_changed", GlobalCoins.coins)
+
+	if GlobalHp != null:
+		GlobalHp.max_hp = 3
+		GlobalHp.hp = 3
+		if GlobalHp.has_signal("hp_changed"):
+			GlobalHp.emit_signal("hp_changed", GlobalHp.hp)
+
+	if DialogueVariables != null:
+		DialogueVariables.slimes_killed = 0
+		if DialogueVariables.has_signal("slimes_killed_changed"):
+			DialogueVariables.emit_signal("slimes_killed_changed", DialogueVariables.slimes_killed)
+
+	if GlobalEnemyStates != null:
+		GlobalEnemyStates.dead_enemies.clear()
+		GlobalEnemyStates.enemy_states.clear()
+
+	if GlobalMiniGames != null:
+		if GlobalMiniGames.has_method("reset_progress"):
+			GlobalMiniGames.reset_progress(false)
+		else:
+			_apply_mini_games_state(_build_default_mini_games_state())
+
+
+func _build_default_mini_games_state() -> Dictionary:
+	return {
+		"schemaVersion": 1,
+		"bestScores": {
+			"coin": 0,
+			"memory": 0,
+			"harvest": 0,
+		},
+		"runsPlayed": {
+			"coin": 0,
+			"memory": 0,
+			"harvest": 0,
+		},
+		"totalCoinsEarned": 0,
+		"lastPlayed": {},
+	}
 
 
 func _capture_world_state() -> Dictionary:

@@ -25,8 +25,17 @@ var _bindings_updated_at_unix_ms: int = 0
 var _bindings_updated_at_iso: String = ""
 var _auto_reconnect: bool = true
 var _locale_code: String = "en"
+var _master_volume: float = 1.0
+var _music_volume: float = 1.0
+var _sfx_volume: float = 1.0
+var _audio_muted: bool = false
+var _fullscreen: bool = true
+var _vsync_enabled: bool = true
+var _fps_limit: int = 60
 
 signal locale_changed(locale_code: String)
+signal audio_settings_changed
+signal graphics_settings_changed
 
 
 func _ready() -> void:
@@ -35,7 +44,10 @@ func _ready() -> void:
 	# load network/settings values
 	_load_network_settings()
 	_load_locale_settings()
+	_load_audio_settings()
+	_load_graphics_settings()
 	TranslationServer.set_locale(_locale_code)
+	_apply_graphics_settings()
 
 
 func load_bindings() -> void:
@@ -58,6 +70,8 @@ func load_bindings() -> void:
 
 	# load network settings
 	_auto_reconnect = bool(config.get_value("network", "auto_reconnect", true))
+	_load_audio_settings_from_config(config)
+	_load_graphics_settings_from_config(config)
 	if _bindings_updated_at_unix_ms <= 0:
 		_set_bindings_timestamp_now()
 
@@ -77,6 +91,13 @@ func save_bindings(sync_remote: bool = true, bump_timestamp: bool = true) -> voi
 	# persist network settings
 	config.set_value("network", "auto_reconnect", _auto_reconnect)
 	config.set_value("locale", "code", _locale_code)
+	config.set_value("audio", "master_volume", _master_volume)
+	config.set_value("audio", "music_volume", _music_volume)
+	config.set_value("audio", "sfx_volume", _sfx_volume)
+	config.set_value("audio", "muted", _audio_muted)
+	config.set_value("graphics", "fullscreen", _fullscreen)
+	config.set_value("graphics", "vsync_enabled", _vsync_enabled)
+	config.set_value("graphics", "fps_limit", _fps_limit)
 
 	config.save(SETTINGS_FILE_PATH)
 
@@ -110,6 +131,35 @@ func _load_locale_settings() -> void:
 		_locale_code = "en"
 
 
+func _load_audio_settings() -> void:
+	var config := ConfigFile.new()
+	if config.load(SETTINGS_FILE_PATH) != OK:
+		return
+
+	_load_audio_settings_from_config(config)
+
+
+func _load_audio_settings_from_config(config: ConfigFile) -> void:
+	_master_volume = clampf(float(config.get_value("audio", "master_volume", _master_volume)), 0.0, 1.0)
+	_music_volume = clampf(float(config.get_value("audio", "music_volume", _music_volume)), 0.0, 1.0)
+	_sfx_volume = clampf(float(config.get_value("audio", "sfx_volume", _sfx_volume)), 0.0, 1.0)
+	_audio_muted = bool(config.get_value("audio", "muted", _audio_muted))
+
+
+func _load_graphics_settings() -> void:
+	var config := ConfigFile.new()
+	if config.load(SETTINGS_FILE_PATH) != OK:
+		return
+
+	_load_graphics_settings_from_config(config)
+
+
+func _load_graphics_settings_from_config(config: ConfigFile) -> void:
+	_fullscreen = bool(config.get_value("graphics", "fullscreen", _fullscreen))
+	_vsync_enabled = bool(config.get_value("graphics", "vsync_enabled", _vsync_enabled))
+	_fps_limit = _normalize_fps_limit(int(config.get_value("graphics", "fps_limit", _fps_limit)))
+
+
 func get_locale_code() -> String:
 	return _locale_code
 
@@ -141,6 +191,122 @@ func set_auto_reconnect(value: bool) -> void:
 		AuthManager.request_local_game_state_save()
 
 
+func get_master_volume() -> float:
+	return _master_volume
+
+
+func get_music_volume() -> float:
+	return _music_volume
+
+
+func get_sfx_volume() -> float:
+	return _sfx_volume
+
+
+func get_audio_muted() -> bool:
+	return _audio_muted
+
+
+func set_master_volume(value: float) -> void:
+	_set_audio_settings(clampf(value, 0.0, 1.0), _music_volume, _sfx_volume, _audio_muted)
+
+
+func set_music_volume(value: float) -> void:
+	_set_audio_settings(_master_volume, clampf(value, 0.0, 1.0), _sfx_volume, _audio_muted)
+
+
+func set_sfx_volume(value: float) -> void:
+	_set_audio_settings(_master_volume, _music_volume, clampf(value, 0.0, 1.0), _audio_muted)
+
+
+func set_audio_muted(value: bool) -> void:
+	_set_audio_settings(_master_volume, _music_volume, _sfx_volume, bool(value))
+
+
+func _set_audio_settings(master_volume: float, music_volume: float, sfx_volume: float, muted: bool) -> void:
+	_master_volume = master_volume
+	_music_volume = music_volume
+	_sfx_volume = sfx_volume
+	_audio_muted = muted
+	save_bindings(false, false)
+	emit_signal("audio_settings_changed")
+	if AuthManager != null:
+		AuthManager.request_local_game_state_save()
+
+
+func restore_audio_defaults() -> void:
+	_set_audio_settings(1.0, 1.0, 1.0, false)
+
+
+func get_fullscreen() -> bool:
+	return _fullscreen
+
+
+func get_vsync_enabled() -> bool:
+	return _vsync_enabled
+
+
+func get_fps_limit() -> int:
+	return _fps_limit
+
+
+func set_fullscreen(value: bool) -> void:
+	_set_graphics_settings(bool(value), _vsync_enabled, _fps_limit)
+
+
+func set_vsync_enabled(value: bool) -> void:
+	_set_graphics_settings(_fullscreen, bool(value), _fps_limit)
+
+
+func set_fps_limit(value: int) -> void:
+	_set_graphics_settings(_fullscreen, _vsync_enabled, _normalize_fps_limit(value))
+
+
+func restore_graphics_defaults() -> void:
+	_set_graphics_settings(true, true, 60)
+
+
+func restore_misc_defaults() -> void:
+	set_auto_reconnect(true)
+
+
+func _set_graphics_settings(fullscreen: bool, vsync_enabled: bool, fps_limit: int) -> void:
+	_fullscreen = fullscreen
+	_vsync_enabled = vsync_enabled
+	_fps_limit = _normalize_fps_limit(fps_limit)
+	_apply_graphics_settings()
+	save_bindings(false, false)
+	emit_signal("graphics_settings_changed")
+	if AuthManager != null:
+		AuthManager.request_local_game_state_save()
+
+
+func _apply_graphics_settings() -> void:
+	Engine.max_fps = _fps_limit
+
+	var vsync_mode := DisplayServer.VSYNC_ENABLED if _vsync_enabled else DisplayServer.VSYNC_DISABLED
+	DisplayServer.window_set_vsync_mode(vsync_mode)
+
+	if DisplayServer.get_name().to_lower() == "headless":
+		return
+
+	var target_mode := DisplayServer.WINDOW_MODE_FULLSCREEN if _fullscreen else DisplayServer.WINDOW_MODE_WINDOWED
+	if DisplayServer.window_get_mode() != target_mode:
+		DisplayServer.window_set_mode(target_mode)
+
+
+func _normalize_fps_limit(value: int) -> int:
+	if value <= 0:
+		return 0
+	if value <= 30:
+		return 30
+	if value <= 60:
+		return 60
+	if value <= 120:
+		return 120
+	return 0
+
+
 func get_bindings_snapshot() -> Dictionary:
 	return {
 		"bindings": get_serialized_bindings(),
@@ -153,6 +319,17 @@ func get_settings_snapshot() -> Dictionary:
 	return {
 		"locale": _locale_code,
 		"autoReconnect": _auto_reconnect,
+		"audio": {
+			"masterVolume": _master_volume,
+			"musicVolume": _music_volume,
+			"sfxVolume": _sfx_volume,
+			"muted": _audio_muted,
+		},
+		"graphics": {
+			"fullscreen": _fullscreen,
+			"vsyncEnabled": _vsync_enabled,
+			"fpsLimit": _fps_limit,
+		},
 	}
 
 
@@ -164,11 +341,45 @@ func apply_settings_snapshot(settings_snapshot: Dictionary) -> void:
 	var locale_changed_now := locale != _locale_code
 	_locale_code = locale
 	_auto_reconnect = bool(settings_snapshot.get("autoReconnect", _auto_reconnect))
+	var audio_changed_now := false
+	var graphics_changed_now := false
+	var audio_state: Variant = settings_snapshot.get("audio", {})
+	if typeof(audio_state) == TYPE_DICTIONARY:
+		var audio_dict := audio_state as Dictionary
+		var next_master := clampf(float(audio_dict.get("masterVolume", _master_volume)), 0.0, 1.0)
+		var next_music := clampf(float(audio_dict.get("musicVolume", _music_volume)), 0.0, 1.0)
+		var next_sfx := clampf(float(audio_dict.get("sfxVolume", _sfx_volume)), 0.0, 1.0)
+		var next_muted := bool(audio_dict.get("muted", _audio_muted))
+		audio_changed_now = not is_equal_approx(next_master, _master_volume) \
+			or not is_equal_approx(next_music, _music_volume) \
+			or not is_equal_approx(next_sfx, _sfx_volume) \
+			or next_muted != _audio_muted
+		_master_volume = next_master
+		_music_volume = next_music
+		_sfx_volume = next_sfx
+		_audio_muted = next_muted
+	var graphics_state: Variant = settings_snapshot.get("graphics", {})
+	if typeof(graphics_state) == TYPE_DICTIONARY:
+		var graphics_dict := graphics_state as Dictionary
+		var next_fullscreen := bool(graphics_dict.get("fullscreen", _fullscreen))
+		var next_vsync := bool(graphics_dict.get("vsyncEnabled", _vsync_enabled))
+		var next_fps := _normalize_fps_limit(int(graphics_dict.get("fpsLimit", _fps_limit)))
+		graphics_changed_now = next_fullscreen != _fullscreen \
+			or next_vsync != _vsync_enabled \
+			or next_fps != _fps_limit
+		_fullscreen = next_fullscreen
+		_vsync_enabled = next_vsync
+		_fps_limit = next_fps
 	TranslationServer.set_locale(_locale_code)
+	_apply_graphics_settings()
 	save_bindings(false, false)
 
 	if locale_changed_now:
 		emit_signal("locale_changed", _locale_code)
+	if audio_changed_now:
+		emit_signal("audio_settings_changed")
+	if graphics_changed_now:
+		emit_signal("graphics_settings_changed")
 
 
 func apply_serialized_bindings(bindings: Dictionary, updated_at_unix_ms: int = 0, updated_at_iso: String = "") -> void:

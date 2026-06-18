@@ -28,5 +28,4 @@ func _ensure_mobile_controls() -> void:
 	mobile_controls.set("show_crouch_button", false)
 	mobile_controls.set("show_map_button", false)
 	mobile_controls.set("show_bag_button", false)
-	mobile_controls.set("force_show_controls", true)
 	add_child(mobile_controls)

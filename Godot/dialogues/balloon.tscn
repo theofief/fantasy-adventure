@@ -151,6 +151,8 @@ func apply_dialogue_line() -> void:
 
 	dialogue_label.show()
 	if not dialogue_line.text.is_empty():
+		if AudioManager != null:
+			AudioManager.play_speak()
 		dialogue_label.type_out()
 		await dialogue_label.finished_typing
 

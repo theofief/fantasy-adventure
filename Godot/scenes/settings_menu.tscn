@@ -113,6 +113,12 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("3_font_bold")
 text = "Restaurer par defaut"
 
+[node name="RestartGameButton" type="Button" parent="MarginContainer/VBoxContainer/BottomActions"]
+custom_minimum_size = Vector2(240, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font_bold")
+text = "Recommencer le jeu"
+
 [node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/BottomActions"]
 custom_minimum_size = Vector2(220, 40)
 layout_mode = 2

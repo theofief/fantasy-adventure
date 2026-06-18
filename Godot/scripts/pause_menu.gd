@@ -44,25 +44,26 @@ func pause():
 	get_tree().paused = true
 	$AnimationPlayer.play("blur")
 
-func testEsc():
-	if Input.is_action_just_pressed("esc"):
-		if UIManager.suppress_pause_once:
-			UIManager.suppress_pause_once = false
-			return
-		if UIManager.current_menu != "" and UIManager.current_menu != "pause":
-			return
-		if !get_tree().paused:
-			pause()
-		elif UIManager.current_menu == "pause":
-			resume()
-
 func _process(_delta):
-	testEsc()
-	if UIManager.suppress_pause_once and not Input.is_action_just_pressed("esc"):
+	if UIManager.suppress_pause_once:
 		UIManager.suppress_pause_once = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _is_pause_toggle_event(event):
+		if UIManager.suppress_pause_once:
+			UIManager.suppress_pause_once = false
+			get_viewport().set_input_as_handled()
+			return
+		if UIManager.current_menu != "" and UIManager.current_menu != "pause":
+			return
+		if not get_tree().paused:
+			pause()
+		elif UIManager.current_menu == "pause":
+			resume()
+		get_viewport().set_input_as_handled()
+		return
+
 	if UIManager == null or UIManager.current_menu != "pause":
 		return
 
@@ -131,3 +132,17 @@ func _is_pointer_outside_pause_content(position: Vector2) -> bool:
 	if menu_content != null and menu_content.get_global_rect().has_point(position):
 		return false
 	return true
+
+
+func _is_pause_toggle_event(event: InputEvent) -> bool:
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		if not key_event.pressed or key_event.echo:
+			return false
+		return key_event.physical_keycode == KEY_ESCAPE or key_event.keycode == KEY_ESCAPE
+
+	if event is InputEventAction:
+		var action_event := event as InputEventAction
+		return action_event.pressed and action_event.action == &"esc"
+
+	return false

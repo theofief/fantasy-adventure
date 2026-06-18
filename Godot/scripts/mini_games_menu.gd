@@ -156,6 +156,7 @@ func _build_ui() -> void:
 	root.add_child(_game_actions)
 
 	_audio_player = AudioStreamPlayer.new()
+	_audio_player.bus = "SFX"
 	add_child(_audio_player)
 
 

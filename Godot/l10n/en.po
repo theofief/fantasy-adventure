@@ -172,6 +172,81 @@ msgstr "Back to main"
 msgid "Press \"E\""
 msgstr "Press \"E\""
 
+msgid "Welcome to the shop!"
+msgstr "Welcome to the shop!"
+
+msgid "Recommencer le jeu"
+msgstr "Restart game"
+
+msgid "Clique encore sur Recommencer le jeu pour confirmer."
+msgstr "Click Restart game again to confirm."
+
+msgid "Sauvegarde reinitialisee."
+msgstr "Save reset."
+
+msgid "Sons"
+msgstr "Sound"
+
+msgid "Touches"
+msgstr "Controls"
+
+msgid "Divers"
+msgstr "Other"
+
+msgid "Graphismes"
+msgstr "Graphics"
+
+msgid "Volume general"
+msgstr "Master volume"
+
+msgid "Musique"
+msgstr "Music"
+
+msgid "Effets sonores"
+msgstr "Sound effects"
+
+msgid "Couper tous les sons"
+msgstr "Mute all sounds"
+
+msgid "Regle la musique, les bruitages et le volume general"
+msgstr "Adjust music, sound effects and master volume"
+
+msgid "Les changements de son sont appliques immediatement."
+msgstr "Sound changes are applied immediately."
+
+msgid "Parametres divers du jeu et de la connexion"
+msgstr "Other game and connection settings"
+
+msgid "Ces options sont sauvegardees avec ton profil."
+msgstr "These options are saved with your profile."
+
+msgid "Plein ecran"
+msgstr "Fullscreen"
+
+msgid "Synchronisation verticale"
+msgstr "Vertical sync"
+
+msgid "Limite FPS"
+msgstr "FPS limit"
+
+msgid "Illimite"
+msgstr "Unlimited"
+
+msgid "Ajuste l'affichage et les performances"
+msgstr "Adjust display and performance"
+
+msgid "Certains changements peuvent dependre du navigateur ou de l'appareil."
+msgstr "Some changes may depend on the browser or device."
+
+msgid "Sons restaures par defaut."
+msgstr "Sound settings restored to default."
+
+msgid "Graphismes restaures par defaut."
+msgstr "Graphics settings restored to default."
+
+msgid "Parametres divers restaures par defaut."
+msgstr "Other settings restored to default."
+
 msgid "Renseigne ton profil local pour lancer une session sans serveur"
 msgstr "Fill in your local profile to start an offline session"
 
