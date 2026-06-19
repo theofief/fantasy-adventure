@@ -930,9 +930,18 @@ func _capture_inventory_state() -> Dictionary:
 			if typeof(item) == TYPE_DICTIONARY:
 				item_names.append(str((item as Dictionary).get("name", "")))
 
+	var selected_slot_value: Variant = inventory_node.get("selected_slot")
+	var selected_held_slot_value: Variant = inventory_node.get("selected_held_slot")
+	var selected_slot_kind_value: Variant = inventory_node.get("selected_slot_kind")
+	var inventory_slots_value: Variant = inventory_node.get("inventory_slots")
+	var hotbar_slots_value: Variant = inventory_node.get("hotbar_slots")
+
 	return {
-		"selectedSlot": int(inventory_node.get("selected_slot")),
-		"selectedHeldSlot": int(inventory_node.get("selected_held_slot")),
+		"selectedSlot": int(selected_slot_value) if selected_slot_value != null else 0,
+		"selectedHeldSlot": int(selected_held_slot_value) if selected_held_slot_value != null else 0,
+		"selectedSlotKind": str(selected_slot_kind_value) if selected_slot_kind_value != null else "hotbar",
+		"inventorySlots": inventory_slots_value if typeof(inventory_slots_value) == TYPE_ARRAY else [],
+		"hotbarSlots": hotbar_slots_value if typeof(hotbar_slots_value) == TYPE_ARRAY else [],
 		"items": item_names,
 	}
 

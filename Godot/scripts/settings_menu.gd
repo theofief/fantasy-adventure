@@ -9,6 +9,10 @@ const ACTION_DEFINITIONS := [
 	{"action": "ui_inventory", "label": "Ouvrir l'inventaire"},
 	{"action": "ui_toggle_map", "label": "Ouvrir la carte"},
 	{"action": "ui_hit", "label": "Attaquer"},
+	{"action": "ui_hotbar_1", "label": "Hotbar slot 1"},
+	{"action": "ui_hotbar_2", "label": "Hotbar slot 2"},
+	{"action": "ui_hotbar_3", "label": "Hotbar slot 3"},
+	{"action": "ui_hotbar_4", "label": "Hotbar slot 4"},
 	{"action": "ui_space", "label": "Saut"},
 	{"action": "ui_shift", "label": "Accroupir"},
 	{"action": "ui_left", "label": "Gauche (vehicule / UI)"},
@@ -684,10 +688,10 @@ func _get_action_key_events(action_name: String) -> Array[InputEventKey]:
 
 func _make_event_key(event: InputEventKey) -> String:
 	var key_code := event.physical_keycode if event.physical_keycode != 0 else event.keycode
-	if key_code == 0:
+	if key_code == 0 and event.unicode == 0:
 		return ""
 	return "%s:%s:%s:%s:%s:%s" % [
-		key_code,
+		key_code if key_code != 0 else event.unicode,
 		event.shift_pressed,
 		event.alt_pressed,
 		event.ctrl_pressed,
@@ -709,4 +713,6 @@ func _duplicate_key_event(source: InputEventKey) -> InputEventKey:
 	duplicated.ctrl_pressed = source.ctrl_pressed
 	duplicated.meta_pressed = source.meta_pressed
 	duplicated.location = source.location
+	duplicated.unicode = source.unicode
+	duplicated.key_label = source.key_label
 	return duplicated

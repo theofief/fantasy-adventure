@@ -18,7 +18,18 @@ const TRACKED_ACTIONS := [
 	"ui_inventory",
 	"ui_toggle_map",
 	"ui_hit",
+	"ui_hotbar_1",
+	"ui_hotbar_2",
+	"ui_hotbar_3",
+	"ui_hotbar_4",
 ]
+
+const HOTBAR_DEFAULT_UNICODE_BINDINGS := {
+	"ui_hotbar_1": 38, # &
+	"ui_hotbar_2": 233, # é
+	"ui_hotbar_3": 34, # "
+	"ui_hotbar_4": 39, # '
+}
 
 var _default_bindings: Dictionary = {}
 var _bindings_updated_at_unix_ms: int = 0
@@ -39,6 +50,7 @@ signal graphics_settings_changed
 
 
 func _ready() -> void:
+	_ensure_tracked_actions()
 	_snapshot_default_bindings()
 	load_bindings()
 	# load network/settings values
@@ -470,6 +482,21 @@ func _snapshot_default_bindings() -> void:
 		_default_bindings[action_name] = _serialize_events(InputMap.action_get_events(action_name))
 
 
+func _ensure_tracked_actions() -> void:
+	for action_name in TRACKED_ACTIONS:
+		if not InputMap.has_action(action_name):
+			InputMap.add_action(action_name)
+
+	for action_name in HOTBAR_DEFAULT_UNICODE_BINDINGS.keys():
+		if not InputMap.action_get_events(action_name).is_empty():
+			continue
+		var event := InputEventKey.new()
+		event.unicode = int(HOTBAR_DEFAULT_UNICODE_BINDINGS[action_name])
+		event.key_label = event.unicode as Key
+		event.keycode = event.unicode as Key
+		InputMap.action_add_event(action_name, event)
+
+
 func _remove_matching_key(action_name: String, key_event: InputEventKey) -> void:
 	var events := InputMap.action_get_events(action_name)
 	InputMap.action_erase_events(action_name)
@@ -534,6 +561,8 @@ func _serialize_events(events: Array) -> Array:
 				"ctrl_pressed": event.ctrl_pressed,
 				"meta_pressed": event.meta_pressed,
 				"location": event.location,
+				"unicode": event.unicode,
+				"key_label": event.key_label,
 			})
 	return serialized
 
@@ -553,6 +582,8 @@ func _deserialize_event(data: Variant) -> InputEventKey:
 	event.ctrl_pressed = bool(data.get("ctrl_pressed", false))
 	event.meta_pressed = bool(data.get("meta_pressed", false))
 	event.location = int(data.get("location", 0)) as KeyLocation
+	event.unicode = int(data.get("unicode", 0))
+	event.key_label = int(data.get("key_label", 0)) as Key
 	return event
 
 
@@ -563,7 +594,9 @@ func _key_events_match(left: InputEventKey, right: InputEventKey) -> bool:
 		and left.alt_pressed == right.alt_pressed \
 		and left.ctrl_pressed == right.ctrl_pressed \
 		and left.meta_pressed == right.meta_pressed \
-		and left.location == right.location
+		and left.location == right.location \
+		and left.unicode == right.unicode \
+		and left.key_label == right.key_label
 
 
 func _format_event(event: InputEvent) -> String:
@@ -583,6 +616,8 @@ func _format_event(event: InputEvent) -> String:
 
 	var key_code := key_event.physical_keycode if key_event.physical_keycode != 0 else key_event.keycode
 	var key_name := OS.get_keycode_string(key_code)
+	if key_name == "" and key_event.unicode > 0:
+		key_name = String.chr(key_event.unicode)
 	if key_name == "":
 		key_name = OS.get_keycode_string(key_event.keycode)
 
