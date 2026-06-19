@@ -1,22 +1,40 @@
 extends CanvasLayer
 
-const SLOT_SIZE := 64
+const SLOT_SIZE := 52
 const SMALL_SLOT_SIZE := 52
 const SLOT_GAP := 10
 const HUD_HOTBAR_SLOTS := 4
 const HOTBAR_SLOTS := HUD_HOTBAR_SLOTS
 const INVENTORY_COLUMNS := 4
-const INVENTORY_ROWS := 3
+const INVENTORY_ROWS := 4
 const TOTAL_INVENTORY_SLOTS := INVENTORY_COLUMNS * INVENTORY_ROWS
 const INVENTORY_LAYER := 120
 const SLOT_KIND_INVENTORY := "inventory"
 const SLOT_KIND_HOTBAR := "hotbar"
 const HOTBAR_ACTIONS := ["ui_hotbar_1", "ui_hotbar_2", "ui_hotbar_3", "ui_hotbar_4"]
 const HOTBAR_DEFAULT_UNICODES := [38, 233, 34, 39] # & é " '
+const INVENTORY_PANEL_SIZE := Vector2(980, 620)
+const INVENTORY_CONTENT_SIZE := Vector2(892, 572)
+const INVENTORY_MIDDLE_SIZE := Vector2(0, 350)
+const IRON_TOOL_ITEM_IDS := [
+	"iron_tool_01",
+	"iron_tool_02",
+	"iron_tool_03",
+	"iron_tool_04",
+	"iron_tool_05",
+	"iron_tool_06",
+	"iron_tool_07",
+	"iron_tool_08",
+	"iron_tool_09",
+	"iron_tool_10",
+	"iron_tool_11",
+	"iron_tool_12",
+]
 
 const PLAYER_TEXTURE := preload("res://assets/tiles/Player/Player.png")
 const COIN_TEXTURE := preload("res://assets/tiles/platformer/coin.png")
 const SWORD_TEXTURE := preload("res://assets/tiles/Player/Tools/Iron/Iron_Sword.png")
+const IRON_TOOLS_TEXTURE := preload("res://assets/tiles/Player/Tools/Iron/Iron_Tools.png")
 const FISHING_ROD_TEXTURE := preload("res://assets/tiles/Player/Tools/Fishing_Rod/Wooden_Fishing_Rod.png")
 const WOODEN_BOW_TEXTURE := preload("res://assets/tiles/Player/Tools/Bow/Wooden_Bow.png")
 const HUD_FONT := preload("res://assets/fonts/PixelOperator8.ttf")
@@ -26,11 +44,40 @@ const BLUR_SHADER := preload("res://Shaders/pause_menu.gdshader")
 var item_catalog := {
 	"sword": {"id": "sword", "name": "SWORD", "type": "Weapon", "description": "A basic iron sword", "texture": SWORD_TEXTURE, "texture_region": Rect2(18, 19, 16, 20), "icon_scale": Vector2(1.0, 1.0)},
 	"steel_sword": {"id": "steel_sword", "name": "STEEL SWORD", "type": "Weapon", "description": "A sharper sword with improved balance and power.", "texture": SWORD_TEXTURE, "texture_region": Rect2(18, 19, 16, 20), "icon_scale": Vector2(1.0, 1.0), "icon_modulate": Color(0.64, 0.86, 1.0, 1.0)},
-	"wooden_bow": {"id": "wooden_bow", "name": "WOODEN BOW", "type": "Weapon", "description": "A light wooden bow for ranged attacks.", "texture": WOODEN_BOW_TEXTURE, "texture_region": Rect2(20, 32, 24, 14), "icon_scale": Vector2(1.0, 0.72)},
+	"wooden_bow": {"id": "wooden_bow", "name": "WOODEN BOW", "type": "Weapon", "description": "A light wooden bow for ranged attacks.", "texture": WOODEN_BOW_TEXTURE, "texture_region": Rect2(357, 88, 6, 16), "icon_scale": Vector2(0.55, 1.0)},
 	"fishing_rod": {"id": "fishing_rod", "name": "FISHING ROD", "type": "Tool", "description": "A simple wooden fishing rod.", "texture": FISHING_ROD_TEXTURE, "texture_region": Rect2(163, 82, 4, 17), "icon_scale": Vector2(0.42, 1.0)},
+	"iron_tool_01": {"id": "iron_tool_01", "name": "IRON TOOL 01", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(19, 20, 6, 12), "icon_scale": Vector2(0.65, 1.0)},
+	"iron_tool_02": {"id": "iron_tool_02", "name": "IRON TOOL 02", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(14, 91, 15, 11), "icon_scale": Vector2(1.0, 0.85)},
+	"iron_tool_03": {"id": "iron_tool_03", "name": "IRON TOOL 03", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(38, 165, 6, 12), "icon_scale": Vector2(0.65, 1.0)},
+	"iron_tool_04": {"id": "iron_tool_04", "name": "IRON TOOL 04", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(26, 201, 4, 18), "icon_scale": Vector2(0.48, 1.0)},
+	"iron_tool_05": {"id": "iron_tool_05", "name": "IRON TOOL 05", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(16, 277, 13, 13), "icon_scale": Vector2(1.0, 1.0)},
+	"iron_tool_06": {"id": "iron_tool_06", "name": "IRON TOOL 06", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(34, 329, 4, 17), "icon_scale": Vector2(0.48, 1.0)},
+	"iron_tool_07": {"id": "iron_tool_07", "name": "IRON TOOL 07", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(26, 396, 4, 15), "icon_scale": Vector2(0.48, 1.0)},
+	"iron_tool_08": {"id": "iron_tool_08", "name": "IRON TOOL 08", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(17, 468, 12, 14), "icon_scale": Vector2(0.95, 1.0)},
+	"iron_tool_09": {"id": "iron_tool_09", "name": "IRON TOOL 09", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(34, 522, 4, 16), "icon_scale": Vector2(0.48, 1.0)},
+	"iron_tool_10": {"id": "iron_tool_10", "name": "IRON TOOL 10", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(24, 609, 7, 9), "icon_scale": Vector2(0.8, 1.0)},
+	"iron_tool_11": {"id": "iron_tool_11", "name": "IRON TOOL 11", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(32, 672, 13, 8), "icon_scale": Vector2(1.0, 0.8)},
+	"iron_tool_12": {"id": "iron_tool_12", "name": "IRON TOOL 12", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(33, 731, 7, 10), "icon_scale": Vector2(0.8, 1.0)},
 }
 
-var inventory_slots: Array[String] = ["fishing_rod", "steel_sword", "wooden_bow", "", "", "", "", "", "", "", "", ""]
+var inventory_slots: Array[String] = [
+	"fishing_rod",
+	"steel_sword",
+	"wooden_bow",
+	"iron_tool_01",
+	"iron_tool_02",
+	"iron_tool_03",
+	"iron_tool_04",
+	"iron_tool_05",
+	"iron_tool_06",
+	"iron_tool_07",
+	"iron_tool_08",
+	"iron_tool_09",
+	"iron_tool_10",
+	"iron_tool_11",
+	"iron_tool_12",
+	"",
+]
 var hotbar_slots: Array[String] = ["sword", "", "", ""]
 var items: Array[Dictionary] = []
 
@@ -50,7 +97,7 @@ var _hotbar_slots: Array[PanelContainer] = []
 var _inventory_slots: Array[PanelContainer] = []
 var _inventory_hotbar_slots: Array[PanelContainer] = []
 var _inventory_layer: Control
-var _inventory_panel: PanelContainer
+var _inventory_panel: Panel
 var _inventory_close_button: Button
 var _coin_count_label: Label
 var _hp_count_label: Label
@@ -231,6 +278,8 @@ func _apply_saved_inventory_state() -> void:
 	_apply_saved_slot_array(inventory_dict.get("hotbarSlots", []), hotbar_slots, HOTBAR_SLOTS)
 	_ensure_item_in_inventory("steel_sword")
 	_ensure_item_in_inventory("wooden_bow")
+	for item_id in IRON_TOOL_ITEM_IDS:
+		_ensure_item_in_inventory(item_id)
 
 	selected_slot_kind = str(inventory_dict.get("selectedSlotKind", selected_slot_kind))
 	if selected_slot_kind != SLOT_KIND_HOTBAR and selected_slot_kind != SLOT_KIND_INVENTORY:
@@ -341,22 +390,26 @@ func _build_inventory_panel() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_inventory_layer.add_child(center)
 
-	_inventory_panel = PanelContainer.new()
+	_inventory_panel = Panel.new()
 	_inventory_panel.name = "InventoryPanel"
 	_inventory_panel.mouse_filter = Control.MOUSE_FILTER_PASS
-	_inventory_panel.custom_minimum_size = Vector2(980, 620)
+	_inventory_panel.custom_minimum_size = INVENTORY_PANEL_SIZE
+	_inventory_panel.size = INVENTORY_PANEL_SIZE
+	_inventory_panel.clip_contents = true
 	_inventory_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.89, 0.83, 0.58, 0.52), Color(0.04, 0.04, 0.04, 1), 2, 18))
 	center.add_child(_inventory_panel)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 44)
-	margin.add_theme_constant_override("margin_top", 24)
-	margin.add_theme_constant_override("margin_right", 44)
-	margin.add_theme_constant_override("margin_bottom", 24)
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.offset_left = 44
+	margin.offset_top = 24
+	margin.offset_right = -44
+	margin.offset_bottom = -24
 	_inventory_panel.add_child(margin)
 
 	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 22)
+	root.custom_minimum_size = INVENTORY_CONTENT_SIZE
+	root.add_theme_constant_override("separation", 14)
 	margin.add_child(root)
 
 	root.add_child(_build_title())
@@ -367,7 +420,7 @@ func _build_inventory_panel() -> void:
 
 func _build_title() -> Control:
 	var header := PanelContainer.new()
-	header.custom_minimum_size = Vector2(0, 96)
+	header.custom_minimum_size = Vector2(0, 78)
 	header.add_theme_stylebox_override("panel", _make_panel_style(Color(0.92, 0.84, 0.58, 0.95), Color(0.04, 0.04, 0.04, 1), 2, 14))
 
 	var title := Label.new()
@@ -375,7 +428,7 @@ func _build_title() -> Control:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title.add_theme_font_override("font", PIXEL_FONT)
-	title.add_theme_font_size_override("font_size", 48)
+	title.add_theme_font_size_override("font_size", 40)
 	title.add_theme_color_override("font_color", Color.BLACK)
 	header.add_child(title)
 	return header
@@ -425,19 +478,20 @@ func _is_pointer_outside_inventory(position: Vector2) -> bool:
 
 func _build_middle_content() -> Control:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 46)
+	row.custom_minimum_size = INVENTORY_MIDDLE_SIZE
+	row.add_theme_constant_override("separation", 34)
 
 	var grid := GridContainer.new()
 	grid.columns = INVENTORY_COLUMNS
-	grid.add_theme_constant_override("h_separation", SLOT_GAP)
-	grid.add_theme_constant_override("v_separation", SLOT_GAP + 20)
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 14)
 	row.add_child(grid)
 
 	for index in range(TOTAL_INVENTORY_SLOTS):
 		var slot_column := VBoxContainer.new()
-		slot_column.custom_minimum_size = Vector2(SLOT_SIZE, SLOT_SIZE + 34)
+		slot_column.custom_minimum_size = Vector2(SLOT_SIZE, SLOT_SIZE + 18)
 		slot_column.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		slot_column.add_theme_constant_override("separation", 6)
+		slot_column.add_theme_constant_override("separation", 3)
 		var slot := _create_slot(SLOT_SIZE, Color.BLACK, Color.BLACK, true)
 		_connect_slot_interaction(slot, index, SLOT_KIND_INVENTORY)
 		slot_column.add_child(slot)
@@ -445,12 +499,14 @@ func _build_middle_content() -> Control:
 
 		var label := Label.new()
 		label.name = "ItemName"
-		label.custom_minimum_size = Vector2(SLOT_SIZE, 28)
+		label.custom_minimum_size = Vector2(SLOT_SIZE, 15)
 		label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.clip_text = true
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		label.add_theme_font_override("font", PIXEL_FONT)
-		label.add_theme_font_size_override("font_size", 10)
+		label.add_theme_font_size_override("font_size", 8)
 		label.add_theme_color_override("font_color", Color.BLACK)
 		slot_column.add_child(label)
 		grid.add_child(slot_column)
