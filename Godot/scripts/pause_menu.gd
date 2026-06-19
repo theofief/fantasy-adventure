@@ -10,6 +10,7 @@ const SETTINGS_MENU_SCENE := preload("res://scenes/settings_menu.tscn")
 @onready var quit_button: Button = $PanelContainer/HBoxContainer/VBoxContainer/QuitButton
 
 var settings_overlay: SettingsMenu = null
+var _original_mouse_filters: Dictionary = {}
 
 func _ready():
 	if get_parent() is CanvasLayer:
@@ -22,8 +23,11 @@ func _ready():
 	if SettingsManager != null and SettingsManager.has_signal("locale_changed"):
 		SettingsManager.locale_changed.connect(_on_locale_changed)
 	_refresh_translated_ui()
+	_capture_control_mouse_filters(pause_panel)
+	_set_pause_controls_interactive(false)
 
 func resume():
+	_set_pause_controls_interactive(false)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	get_tree().paused = false
 	$AnimationPlayer.play_backwards("blur")
@@ -42,6 +46,7 @@ func pause():
 	
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	get_tree().paused = true
+	_set_pause_controls_interactive(true)
 	$AnimationPlayer.play("blur")
 
 func _process(_delta):
@@ -90,6 +95,7 @@ func _on_settings_button_pressed() -> void:
 	settings_overlay.opened_from_pause = true
 	settings_overlay.back_requested.connect(_on_settings_back_requested)
 	add_child(settings_overlay)
+	_set_pause_controls_interactive(false)
 	pause_panel.hide()
 	UIManager.menu_open = true
 	UIManager.current_menu = "settings"
@@ -102,11 +108,13 @@ func _on_settings_back_requested() -> void:
 		settings_overlay = null
 
 	pause_panel.show()
+	_set_pause_controls_interactive(true)
 	UIManager.menu_open = true
 	UIManager.current_menu = "pause"
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _on_quit_button_pressed() -> void:
+	_set_pause_controls_interactive(false)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	get_tree().paused = false
 	
@@ -146,3 +154,32 @@ func _is_pause_toggle_event(event: InputEvent) -> bool:
 		return action_event.pressed and action_event.action == &"esc"
 
 	return false
+
+
+func _set_pause_controls_interactive(enabled: bool) -> void:
+	if pause_panel == null:
+		return
+	_set_control_tree_interactive(pause_panel, enabled)
+
+
+func _set_control_tree_interactive(node: Node, enabled: bool) -> void:
+	if node is Control:
+		var control := node as Control
+		if enabled and _original_mouse_filters.has(control):
+			control.mouse_filter = _original_mouse_filters[control]
+		elif not enabled:
+			control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if control is BaseButton:
+			(control as BaseButton).disabled = not enabled
+
+	for child in node.get_children():
+		_set_control_tree_interactive(child, enabled)
+
+
+func _capture_control_mouse_filters(node: Node) -> void:
+	if node is Control:
+		var control := node as Control
+		_original_mouse_filters[control] = control.mouse_filter
+
+	for child in node.get_children():
+		_capture_control_mouse_filters(child)

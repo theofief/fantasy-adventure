@@ -120,7 +120,7 @@ func open_map():
 	visible = true
 	is_open = true
 	if close_button != null:
-		close_button.visible = true
+		close_button.visible = _should_show_mobile_close_button()
 	_layout_island_selector()
 	_refresh_island_selector()
 	get_tree().paused = true
@@ -253,6 +253,15 @@ func _is_pointer_outside_map_content(position: Vector2) -> bool:
 	if subviewport_container != null and subviewport_container.get_global_rect().has_point(position):
 		return false
 	return true
+
+
+func _should_show_mobile_close_button() -> bool:
+	if OS.has_feature("android") or OS.has_feature("ios") or OS.has_feature("mobile"):
+		return true
+	if OS.has_feature("web"):
+		var touch_points := int(JavaScriptBridge.eval("navigator.maxTouchPoints || 0"))
+		return touch_points > 0
+	return false
 
 
 func _set_control_rect_if_free_anchors(control: Control, control_size: Vector2, control_position: Vector2) -> void:
