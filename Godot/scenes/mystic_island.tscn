@@ -7782,7 +7782,6 @@ script = ExtResource("156_n37q6")
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=59331861]
 
 [node name="PauseMenu" parent="CanvasLayer" unique_id=1923019937 instance=ExtResource("157_tevpd")]
-visible = false
 
 [node name="MobileControls" type="CanvasLayer" parent="." unique_id=1011718279]
 script = ExtResource("159_urw0u")

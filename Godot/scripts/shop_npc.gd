@@ -76,7 +76,10 @@ func end_dialogue_properly(_completed := false) -> void:
 		current_balloon = null
 
 	_set_player_can_move(true)
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if _current_scene_wants_visible_mouse():
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	else:
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 	if player_inside:
 		hint_label.show()
@@ -112,3 +115,8 @@ func _set_player_can_move(can_move: bool) -> void:
 		if str(property.get("name", "")) == "can_move":
 			player.set("can_move", can_move)
 			return
+
+
+func _current_scene_wants_visible_mouse() -> bool:
+	var current_scene := get_tree().current_scene
+	return current_scene != null and current_scene.has_method("wants_visible_gameplay_mouse") and current_scene.wants_visible_gameplay_mouse()

@@ -17,18 +17,10 @@ const INVENTORY_PANEL_SIZE := Vector2(980, 620)
 const INVENTORY_CONTENT_SIZE := Vector2(892, 572)
 const INVENTORY_MIDDLE_SIZE := Vector2(0, 350)
 const IRON_TOOL_ITEM_IDS := [
-	"iron_tool_01",
 	"iron_tool_02",
-	"iron_tool_03",
-	"iron_tool_04",
 	"iron_tool_05",
-	"iron_tool_06",
-	"iron_tool_07",
 	"iron_tool_08",
-	"iron_tool_09",
-	"iron_tool_10",
 	"iron_tool_11",
-	"iron_tool_12",
 ]
 
 const PLAYER_TEXTURE := preload("res://assets/tiles/Player/Player.png")
@@ -46,36 +38,28 @@ var item_catalog := {
 	"steel_sword": {"id": "steel_sword", "name": "STEEL SWORD", "type": "Weapon", "description": "A sharper sword with improved balance and power.", "texture": SWORD_TEXTURE, "texture_region": Rect2(18, 19, 16, 20), "icon_scale": Vector2(1.0, 1.0), "icon_modulate": Color(0.64, 0.86, 1.0, 1.0)},
 	"wooden_bow": {"id": "wooden_bow", "name": "WOODEN BOW", "type": "Weapon", "description": "A light wooden bow for ranged attacks.", "texture": WOODEN_BOW_TEXTURE, "texture_region": Rect2(357, 88, 6, 16), "icon_scale": Vector2(0.55, 1.0)},
 	"fishing_rod": {"id": "fishing_rod", "name": "FISHING ROD", "type": "Tool", "description": "A simple wooden fishing rod.", "texture": FISHING_ROD_TEXTURE, "texture_region": Rect2(163, 82, 4, 17), "icon_scale": Vector2(0.42, 1.0)},
-	"iron_tool_01": {"id": "iron_tool_01", "name": "IRON TOOL 01", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(19, 20, 6, 12), "icon_scale": Vector2(0.65, 1.0)},
-	"iron_tool_02": {"id": "iron_tool_02", "name": "IRON TOOL 02", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(14, 91, 15, 11), "icon_scale": Vector2(1.0, 0.85)},
-	"iron_tool_03": {"id": "iron_tool_03", "name": "IRON TOOL 03", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(38, 165, 6, 12), "icon_scale": Vector2(0.65, 1.0)},
-	"iron_tool_04": {"id": "iron_tool_04", "name": "IRON TOOL 04", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(26, 201, 4, 18), "icon_scale": Vector2(0.48, 1.0)},
-	"iron_tool_05": {"id": "iron_tool_05", "name": "IRON TOOL 05", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(16, 277, 13, 13), "icon_scale": Vector2(1.0, 1.0)},
-	"iron_tool_06": {"id": "iron_tool_06", "name": "IRON TOOL 06", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(34, 329, 4, 17), "icon_scale": Vector2(0.48, 1.0)},
-	"iron_tool_07": {"id": "iron_tool_07", "name": "IRON TOOL 07", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(26, 396, 4, 15), "icon_scale": Vector2(0.48, 1.0)},
-	"iron_tool_08": {"id": "iron_tool_08", "name": "IRON TOOL 08", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(17, 468, 12, 14), "icon_scale": Vector2(0.95, 1.0)},
-	"iron_tool_09": {"id": "iron_tool_09", "name": "IRON TOOL 09", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(34, 522, 4, 16), "icon_scale": Vector2(0.48, 1.0)},
-	"iron_tool_10": {"id": "iron_tool_10", "name": "IRON TOOL 10", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(24, 609, 7, 9), "icon_scale": Vector2(0.8, 1.0)},
-	"iron_tool_11": {"id": "iron_tool_11", "name": "IRON TOOL 11", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(32, 672, 13, 8), "icon_scale": Vector2(1.0, 0.8)},
-	"iron_tool_12": {"id": "iron_tool_12", "name": "IRON TOOL 12", "type": "Tool", "description": "An iron tool from the adventurer's kit.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(33, 731, 7, 10), "icon_scale": Vector2(0.8, 1.0)},
+	"iron_tool_02": {"id": "iron_tool_02", "name": "Iron Axe", "type": "Tool", "description": "A reliable iron axe for cutting wood.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(14, 91, 15, 11), "icon_scale": Vector2(1.0, 0.85)},
+	"iron_tool_05": {"id": "iron_tool_05", "name": "Iron Pickaxe", "type": "Tool", "description": "A sturdy iron pickaxe for breaking stone.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(16, 277, 13, 13), "icon_scale": Vector2(1.0, 1.0)},
+	"iron_tool_08": {"id": "iron_tool_08", "name": "Iron Hoe", "type": "Tool", "description": "A practical iron hoe for working the soil.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(17, 468, 12, 14), "icon_scale": Vector2(0.95, 1.0)},
+	"iron_tool_11": {"id": "iron_tool_11", "name": "Iron Watering Can", "type": "Tool", "description": "An iron watering can for taking care of crops.", "texture": IRON_TOOLS_TEXTURE, "texture_region": Rect2(32, 672, 13, 8), "icon_scale": Vector2(1.0, 0.8)},
 }
 
 var inventory_slots: Array[String] = [
-	"fishing_rod",
-	"steel_sword",
-	"wooden_bow",
-	"iron_tool_01",
-	"iron_tool_02",
-	"iron_tool_03",
-	"iron_tool_04",
-	"iron_tool_05",
-	"iron_tool_06",
-	"iron_tool_07",
-	"iron_tool_08",
-	"iron_tool_09",
-	"iron_tool_10",
-	"iron_tool_11",
-	"iron_tool_12",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
 	"",
 ]
 var hotbar_slots: Array[String] = ["sword", "", "", ""]
@@ -276,10 +260,6 @@ func _apply_saved_inventory_state() -> void:
 	var inventory_dict := inventory_state as Dictionary
 	_apply_saved_slot_array(inventory_dict.get("inventorySlots", []), inventory_slots, TOTAL_INVENTORY_SLOTS)
 	_apply_saved_slot_array(inventory_dict.get("hotbarSlots", []), hotbar_slots, HOTBAR_SLOTS)
-	_ensure_item_in_inventory("steel_sword")
-	_ensure_item_in_inventory("wooden_bow")
-	for item_id in IRON_TOOL_ITEM_IDS:
-		_ensure_item_in_inventory(item_id)
 
 	selected_slot_kind = str(inventory_dict.get("selectedSlotKind", selected_slot_kind))
 	if selected_slot_kind != SLOT_KIND_HOTBAR and selected_slot_kind != SLOT_KIND_INVENTORY:
@@ -330,7 +310,7 @@ func _close_inventory(suppress_pause: bool = false) -> void:
 		UIManager.current_menu = ""
 		UIManager.suppress_pause_once = suppress_pause
 	get_tree().paused = false
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	_apply_gameplay_mouse_mode()
 	if _blur_material != null:
 		_blur_material.set_shader_parameter("lod", 0.0)
 
@@ -792,7 +772,7 @@ func _refresh_slots() -> void:
 
 		var label := slot.get_parent().get_node_or_null("ItemName") as Label
 		if label != null:
-			label.text = str(item.get("name", ""))
+			label.text = tr(str(item.get("name", "")))
 
 	for index in range(_hotbar_slots.size()):
 		var slot := _hotbar_slots[index]
@@ -816,11 +796,12 @@ func _refresh_details() -> void:
 	_refresh_detail_icon(item)
 	if _detail_name_label != null:
 		var prefix := str(item.get("emoji", "")).strip_edges()
-		_detail_name_label.text = "%s %s" % [prefix, str(item.get("name", "EMPTY SLOT"))] if prefix != "" else str(item.get("name", "EMPTY SLOT"))
+		var item_name := tr(str(item.get("name", "EMPTY SLOT")))
+		_detail_name_label.text = "%s %s" % [prefix, item_name] if prefix != "" else item_name
 	if _detail_type_label != null:
-		_detail_type_label.text = str(item.get("type", "Empty"))
+		_detail_type_label.text = tr(str(item.get("type", "Empty")))
 	if _detail_description_label != null:
-		_detail_description_label.text = str(item.get("description", "This inventory slot is empty. You will be able to place an item here later."))
+		_detail_description_label.text = tr(str(item.get("description", "This inventory slot is empty. You will be able to place an item here later.")))
 
 
 func _refresh_detail_icon(item: Dictionary) -> void:
@@ -910,6 +891,27 @@ func _set_slot_item_id(slot_kind: String, index: int, item_id: String) -> void:
 	slot_array[index] = item_id
 
 
+func can_add_item(item_id: String) -> bool:
+	if item_id == "" or not item_catalog.has(item_id):
+		return false
+	return _first_empty_inventory_slot() >= 0
+
+
+func add_item_to_inventory(item_id: String, sync_save := true) -> bool:
+	if item_id == "" or not item_catalog.has(item_id):
+		return false
+	var empty_slot := _first_empty_inventory_slot()
+	if empty_slot < 0:
+		return false
+	inventory_slots[empty_slot] = item_id
+	_select_slot(empty_slot, SLOT_KIND_INVENTORY)
+	_rebuild_legacy_items()
+	_refresh_all()
+	if sync_save and AuthManager != null and not AuthManager.is_applying_game_state():
+		AuthManager.request_local_game_state_save()
+	return true
+
+
 func _get_item_from_slot(slot_kind: String, index: int) -> Dictionary:
 	var item_id := _get_slot_item_id(slot_kind, index)
 	if item_id == "" or not item_catalog.has(item_id):
@@ -937,6 +939,21 @@ func _ensure_item_in_inventory(item_id: String) -> void:
 		if inventory_slots[index] == "":
 			inventory_slots[index] = item_id
 			return
+
+
+func _first_empty_inventory_slot() -> int:
+	for index in range(inventory_slots.size()):
+		if inventory_slots[index] == "":
+			return index
+	return -1
+
+
+func _apply_gameplay_mouse_mode() -> void:
+	var current_scene := get_tree().current_scene
+	if current_scene != null and current_scene.has_method("wants_visible_gameplay_mouse") and current_scene.wants_visible_gameplay_mouse():
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		return
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 
 func _rebuild_legacy_items() -> void:

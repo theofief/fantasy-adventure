@@ -459,3 +459,30 @@ msgstr "minerai"
 
 msgid "pieces"
 msgstr "pieces"
+
+msgid "Tool"
+msgstr "Outil"
+
+msgid "Iron Axe"
+msgstr "Hache en fer"
+
+msgid "A reliable iron axe for cutting wood."
+msgstr "Une hache en fer fiable pour couper du bois."
+
+msgid "Iron Pickaxe"
+msgstr "Pioche en fer"
+
+msgid "A sturdy iron pickaxe for breaking stone."
+msgstr "Une pioche en fer solide pour casser la pierre."
+
+msgid "Iron Hoe"
+msgstr "Houe en fer"
+
+msgid "A practical iron hoe for working the soil."
+msgstr "Une houe en fer pratique pour travailler la terre."
+
+msgid "Iron Watering Can"
+msgstr "Arrosoir en fer"
+
+msgid "An iron watering can for taking care of crops."
+msgstr "Un arrosoir en fer pour prendre soin des cultures."

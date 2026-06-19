@@ -459,3 +459,30 @@ msgstr "ore"
 
 msgid "pieces"
 msgstr "coins"
+
+msgid "Tool"
+msgstr "Tool"
+
+msgid "Iron Axe"
+msgstr "Iron Axe"
+
+msgid "A reliable iron axe for cutting wood."
+msgstr "A reliable iron axe for cutting wood."
+
+msgid "Iron Pickaxe"
+msgstr "Iron Pickaxe"
+
+msgid "A sturdy iron pickaxe for breaking stone."
+msgstr "A sturdy iron pickaxe for breaking stone."
+
+msgid "Iron Hoe"
+msgstr "Iron Hoe"
+
+msgid "A practical iron hoe for working the soil."
+msgstr "A practical iron hoe for working the soil."
+
+msgid "Iron Watering Can"
+msgstr "Iron Watering Can"
+
+msgid "An iron watering can for taking care of crops."
+msgstr "An iron watering can for taking care of crops."

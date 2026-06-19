@@ -131,7 +131,6 @@ func open_map():
 
 func close_map():
 	get_tree().paused = false
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	if anim != null and anim.has_animation("blur_map"):
 		anim.play_backwards("blur_map")
@@ -145,6 +144,7 @@ func close_map():
 	# 🔓 libère UIManager
 	UIManager.menu_open = false
 	UIManager.current_menu = ""
+	_apply_gameplay_mouse_mode()
 
 
 func _ensure_map_nodes() -> void:
@@ -420,7 +420,7 @@ func _change_to_island(scene_path: String) -> void:
 	is_open = false
 	UIManager.menu_open = false
 	UIManager.current_menu = ""
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	_apply_gameplay_mouse_mode()
 
 	if AuthManager != null and AuthManager.has_method("commit_scene_checkpoint"):
 		AuthManager.commit_scene_checkpoint()
@@ -445,3 +445,11 @@ func _change_to_island(scene_path: String) -> void:
 func _change_scene_direct(scene_path: String) -> void:
 	print("🗺️ change_scene_to_file(%s)" % scene_path)
 	get_tree().change_scene_to_file(scene_path)
+
+
+func _apply_gameplay_mouse_mode() -> void:
+	var current_scene := get_tree().current_scene
+	if current_scene != null and current_scene.has_method("wants_visible_gameplay_mouse") and current_scene.wants_visible_gameplay_mouse():
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		return
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)

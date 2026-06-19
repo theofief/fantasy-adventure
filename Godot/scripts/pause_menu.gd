@@ -28,13 +28,13 @@ func _ready():
 
 func resume():
 	_set_pause_controls_interactive(false)
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	get_tree().paused = false
 	$AnimationPlayer.play_backwards("blur")
 	
 	# Reset UIManager
 	UIManager.menu_open = false
 	UIManager.current_menu = ""
+	_apply_gameplay_mouse_mode()
 
 func pause():
 	# Empêche d’ouvrir si un autre menu est déjà ouvert
@@ -183,3 +183,11 @@ func _capture_control_mouse_filters(node: Node) -> void:
 
 	for child in node.get_children():
 		_capture_control_mouse_filters(child)
+
+
+func _apply_gameplay_mouse_mode() -> void:
+	var current_scene := get_tree().current_scene
+	if current_scene != null and current_scene.has_method("wants_visible_gameplay_mouse") and current_scene.wants_visible_gameplay_mouse():
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		return
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)

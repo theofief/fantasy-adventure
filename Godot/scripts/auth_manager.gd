@@ -30,6 +30,7 @@ var _is_syncing_input_bindings: bool = false
 var _pending_profile_game_data: Dictionary = {}
 var _is_syncing_profile_game_data: bool = false
 var _is_applying_game_state: bool = false
+var _has_applied_game_state_once: bool = false
 var _is_refreshing_saved_session: bool = false
 var _reconnect_timer: Timer
 var _save_debounce_timer: Timer
@@ -194,6 +195,7 @@ func clear_session() -> void:
 	_pending_profile_game_data = {}
 	_is_syncing_profile_game_data = false
 	_is_applying_game_state = false
+	_has_applied_game_state_once = false
 	if FileAccess.file_exists(SESSION_FILE_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SESSION_FILE_PATH))
 
@@ -289,6 +291,7 @@ func apply_saved_game_state() -> void:
 	_is_applying_game_state = true
 	_apply_game_data(game_data as Dictionary)
 	_is_applying_game_state = false
+	_has_applied_game_state_once = true
 
 
 func apply_saved_player_state_to_current_scene() -> void:
@@ -591,7 +594,9 @@ func _build_game_data_snapshot(bindings_snapshot: Dictionary = {}) -> Dictionary
 	if typeof(existing_game_data) == TYPE_DICTIONARY:
 		game_data = (existing_game_data as Dictionary).duplicate(true)
 
-	game_data["worldState"] = _capture_world_state()
+	var captured_world_state := _capture_world_state()
+	if _has_applied_game_state_once or not game_data.has("worldState"):
+		game_data["worldState"] = captured_world_state
 	var captured_player_state := _capture_player_state(game_data)
 	game_data["scenePlayerStates"] = _capture_scene_player_states(game_data, captured_player_state)
 	var captured_scene_path := str(captured_player_state.get("scenePath", ""))
@@ -606,7 +611,9 @@ func _build_game_data_snapshot(bindings_snapshot: Dictionary = {}) -> Dictionary
 		if _pending_travel_scene_path != "" and captured_scene_path == _pending_travel_scene_path:
 			_pending_travel_scene_path = ""
 	game_data["settings"] = _capture_settings_state()
-	game_data["inventory"] = _capture_inventory_state()
+	var captured_inventory := _capture_inventory_state()
+	if _has_applied_game_state_once or not captured_inventory.is_empty() or not game_data.has("inventory"):
+		game_data["inventory"] = captured_inventory
 	game_data["progression"] = _capture_progression_state()
 	game_data["miniGames"] = _capture_mini_games_state()
 	game_data["saveMeta"] = _create_save_meta()

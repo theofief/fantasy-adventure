@@ -457,3 +457,30 @@ msgstr "mineral"
 
 msgid "pieces"
 msgstr "monedas"
+
+msgid "Tool"
+msgstr "Herramienta"
+
+msgid "Iron Axe"
+msgstr "Hacha de hierro"
+
+msgid "A reliable iron axe for cutting wood."
+msgstr "Un hacha de hierro fiable para cortar madera."
+
+msgid "Iron Pickaxe"
+msgstr "Pico de hierro"
+
+msgid "A sturdy iron pickaxe for breaking stone."
+msgstr "Un pico de hierro resistente para romper piedra."
+
+msgid "Iron Hoe"
+msgstr "Azada de hierro"
+
+msgid "A practical iron hoe for working the soil."
+msgstr "Una azada de hierro practica para trabajar la tierra."
+
+msgid "Iron Watering Can"
+msgstr "Regadera de hierro"
+
+msgid "An iron watering can for taking care of crops."
+msgstr "Una regadera de hierro para cuidar los cultivos."
