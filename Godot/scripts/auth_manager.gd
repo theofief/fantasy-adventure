@@ -36,6 +36,7 @@ var _reconnect_timer: Timer
 var _save_debounce_timer: Timer
 var _offline_restore_notification: String = ""
 var _pending_travel_scene_path: String = ""
+var _has_unsynced_local_game_data: bool = false
 
 
 func _ready() -> void:
@@ -86,6 +87,7 @@ func load_session() -> void:
 	email = str(config.get_value("auth", "email", ""))
 	password = str(config.get_value("auth", "password", ""))
 	token = str(config.get_value("auth", "token", ""))
+	_has_unsynced_local_game_data = bool(config.get_value("sync", "has_unsynced_local_game_data", false))
 	custom_api_base_url = str(config.get_value("server", "custom_api_base_url", ""))
 	var profile_value: Variant = config.get_value("auth", "user_profile", {})
 	if typeof(profile_value) == TYPE_DICTIONARY:
@@ -126,6 +128,7 @@ func save_session() -> void:
 	config.set_value("auth", "password", password)
 	config.set_value("auth", "token", token)
 	config.set_value("auth", "user_profile", user_profile)
+	config.set_value("sync", "has_unsynced_local_game_data", _has_unsynced_local_game_data)
 	config.set_value("server", "custom_api_base_url", custom_api_base_url)
 	config.save(SESSION_FILE_PATH)
 
@@ -196,6 +199,7 @@ func clear_session() -> void:
 	_is_syncing_profile_game_data = false
 	_is_applying_game_state = false
 	_has_applied_game_state_once = false
+	_has_unsynced_local_game_data = false
 	if FileAccess.file_exists(SESSION_FILE_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SESSION_FILE_PATH))
 
@@ -214,6 +218,15 @@ func async_login(input_email: String, input_password: String) -> Dictionary:
 	}
 	var response: Dictionary = await _request_json("/login", HTTPClient.METHOD_POST, payload)
 	if not response.get("ok", false):
+		if bool(response.get("network_error", false)) and _can_resume_saved_login_offline(input_email, input_password):
+			_offline_restore_notification = "Connexion hors ligne avec le profil local"
+			return {
+				"ok": true,
+				"offline": true,
+				"data": {
+					"user": user_profile,
+				},
+			}
 		return response
 
 	var data: Dictionary = response.get("data", {})
@@ -347,6 +360,7 @@ func commit_local_game_state() -> void:
 	var game_data := _build_game_data_snapshot()
 	_set_profile_game_data(game_data)
 	if is_logged_in():
+		_mark_local_game_data_unsynced()
 		queue_profile_game_data_sync(game_data)
 
 
@@ -461,6 +475,7 @@ func queue_input_bindings_sync(bindings_snapshot: Dictionary) -> void:
 	var game_data := _build_game_data_snapshot(bindings_snapshot)
 	_set_profile_game_data(game_data)
 	if is_logged_in():
+		_mark_local_game_data_unsynced()
 		queue_profile_game_data_sync(game_data)
 
 
@@ -491,12 +506,23 @@ func _sync_pending_profile_game_data_async() -> void:
 			var response_data: Dictionary = response.get("data", {})
 			var server_game_data: Variant = response_data.get("gameData", {})
 			if typeof(server_game_data) == TYPE_DICTIONARY:
-				_set_profile_game_data(server_game_data)
+				var server_game_data_dict := (server_game_data as Dictionary).duplicate(true)
+				var current_game_data := _get_current_game_data()
+				if _extract_save_timestamp(current_game_data) > _extract_save_timestamp(server_game_data_dict):
+					_set_profile_game_data(current_game_data)
+					_mark_local_game_data_unsynced()
+					if _pending_profile_game_data.is_empty():
+						_pending_profile_game_data = current_game_data.duplicate(true)
+				else:
+					_set_profile_game_data(server_game_data_dict)
+					_clear_local_game_data_unsynced()
 			else:
 				_set_profile_game_data(game_data_to_send)
+				_clear_local_game_data_unsynced()
 		else:
 			if _pending_profile_game_data.is_empty():
 				_pending_profile_game_data = game_data_to_send
+			_mark_local_game_data_unsynced()
 			break
 
 	_is_syncing_profile_game_data = false
@@ -534,6 +560,10 @@ func _refresh_saved_session_from_server() -> bool:
 	_apply_user_profile(resolved_profile)
 	save_session()
 	_write_offline_backup()
+	if _has_unsynced_local_game_data:
+		var local_game_data := _get_current_game_data()
+		if not local_game_data.is_empty():
+			queue_profile_game_data_sync(local_game_data)
 	_sync_settings_after_auth()
 	_sync_bindings_after_auth()
 	await _sync_pending_profile_game_data_async()
@@ -1094,6 +1124,32 @@ func pop_offline_notification() -> String:
 	var tmp := _offline_restore_notification
 	_offline_restore_notification = ""
 	return tmp
+
+
+func _can_resume_saved_login_offline(input_email: String, input_password: String) -> bool:
+	return (
+		has_local_profile()
+		and email != ""
+		and token != ""
+		and input_email.strip_edges().to_lower() == email
+		and input_password == password
+	)
+
+
+func _mark_local_game_data_unsynced() -> void:
+	if _has_unsynced_local_game_data:
+		return
+	_has_unsynced_local_game_data = true
+	save_session()
+	_write_offline_backup()
+
+
+func _clear_local_game_data_unsynced() -> void:
+	if not _has_unsynced_local_game_data:
+		return
+	_has_unsynced_local_game_data = false
+	save_session()
+	_write_offline_backup()
 
 
 func _resolve_profile_after_remote_sync(remote_profile: Dictionary) -> Dictionary:

@@ -42,6 +42,37 @@ URLs :
 - `https://127.0.0.1:8000/admin`
 - `https://<ip-locale>:8000` pour les autres appareils du reseau.
 
+## Lancement Production Local / LAN
+
+Ces scripts sont separes des scripts de developpement. Ils preparent Symfony en `prod`, lancent le serveur PHP en interne sur `127.0.0.1:8081`, exposent HTTPS sur `443` et redirigent HTTP `80` vers HTTPS.
+
+macOS :
+
+```bash
+./start-back-prod-mac.sh
+```
+
+Linux :
+
+```bash
+./start-back-prod-linux.sh
+```
+
+Windows PowerShell, a lancer en administrateur pour les ports `80/443` :
+
+```powershell
+.\start-back-prod.ps1
+```
+
+URLs :
+
+- `https://127.0.0.1`
+- `https://127.0.0.1/play`
+- `https://127.0.0.1/admin`
+- `https://<ip-locale>` pour les autres appareils du reseau.
+
+Par defaut, un certificat auto-signe est cree dans `var/prod-certs/`. Pour un vrai domaine public, remplace `CERT_FILE` et `KEY_FILE` par un certificat valide avant de lancer le script.
+
 ## Composants
 
 ```text
