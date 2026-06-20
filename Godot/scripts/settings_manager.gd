@@ -275,7 +275,7 @@ func set_fps_limit(value: int) -> void:
 
 
 func restore_graphics_defaults() -> void:
-	_set_graphics_settings(true, true, 60)
+	_set_graphics_settings(false if OS.has_feature("web") else true, true, 60)
 
 
 func restore_misc_defaults() -> void:
@@ -299,7 +299,7 @@ func _apply_graphics_settings() -> void:
 	var vsync_mode := DisplayServer.VSYNC_ENABLED if _vsync_enabled else DisplayServer.VSYNC_DISABLED
 	DisplayServer.window_set_vsync_mode(vsync_mode)
 
-	if DisplayServer.get_name().to_lower() == "headless":
+	if DisplayServer.get_name().to_lower() == "headless" or OS.has_feature("web"):
 		return
 
 	var target_mode := DisplayServer.WINDOW_MODE_FULLSCREEN if _fullscreen else DisplayServer.WINDOW_MODE_WINDOWED

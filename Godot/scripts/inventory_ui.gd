@@ -7,6 +7,8 @@ const HUD_HOTBAR_SLOTS := 4
 const HOTBAR_SLOTS := HUD_HOTBAR_SLOTS
 const INVENTORY_COLUMNS := 4
 const INVENTORY_ROWS := 4
+const SAVE_ROWS := INVENTORY_ROWS + 1
+const HOTBAR_SAVE_ROW := SAVE_ROWS - 1
 const TOTAL_INVENTORY_SLOTS := INVENTORY_COLUMNS * INVENTORY_ROWS
 const INVENTORY_LAYER := 120
 const SLOT_KIND_INVENTORY := "inventory"
@@ -188,14 +190,14 @@ func _select_slot(index: int, slot_kind: String = SLOT_KIND_INVENTORY) -> void:
 		selected_slot = clampi(index, 0, TOTAL_INVENTORY_SLOTS - 1)
 	_refresh_all()
 	if AuthManager != null and not AuthManager.is_applying_game_state():
-		AuthManager.request_local_game_state_save()
+		AuthManager.commit_local_game_state_immediate()
 
 
 func _equip_hotbar_slot(index: int) -> void:
 	selected_held_slot = clampi(index, 0, HOTBAR_SLOTS - 1)
 	_refresh_slots()
 	if AuthManager != null and not AuthManager.is_applying_game_state():
-		AuthManager.request_local_game_state_save()
+		AuthManager.commit_local_game_state_immediate()
 
 
 func _handle_hotbar_shortcut_event(event: InputEvent) -> bool:
@@ -257,9 +259,18 @@ func _apply_saved_inventory_state() -> void:
 	if typeof(inventory_state) != TYPE_DICTIONARY:
 		return
 
-	var inventory_dict := inventory_state as Dictionary
-	_apply_saved_slot_array(inventory_dict.get("inventorySlots", []), inventory_slots, TOTAL_INVENTORY_SLOTS)
-	_apply_saved_slot_array(inventory_dict.get("hotbarSlots", []), hotbar_slots, HOTBAR_SLOTS)
+	apply_inventory_save_state(inventory_state as Dictionary)
+
+
+func apply_inventory_save_state(inventory_dict: Dictionary) -> void:
+	if inventory_dict.is_empty():
+		return
+
+	var applied_rows := _apply_saved_rows(inventory_dict.get("rows", []))
+	if not applied_rows:
+		_reset_slots_to_empty()
+		_apply_saved_slot_array(inventory_dict.get("inventorySlots", []), inventory_slots, TOTAL_INVENTORY_SLOTS)
+		_apply_saved_slot_array(inventory_dict.get("hotbarSlots", []), hotbar_slots, HOTBAR_SLOTS)
 
 	selected_slot_kind = str(inventory_dict.get("selectedSlotKind", selected_slot_kind))
 	if selected_slot_kind != SLOT_KIND_HOTBAR and selected_slot_kind != SLOT_KIND_INVENTORY:
@@ -267,6 +278,23 @@ func _apply_saved_inventory_state() -> void:
 	selected_slot = clampi(int(inventory_dict.get("selectedSlot", selected_slot)), 0, HOTBAR_SLOTS - 1 if selected_slot_kind == SLOT_KIND_HOTBAR else TOTAL_INVENTORY_SLOTS - 1)
 	selected_held_slot = clampi(int(inventory_dict.get("selectedHeldSlot", selected_held_slot)), 0, HOTBAR_SLOTS - 1)
 	_rebuild_legacy_items()
+	_refresh_all()
+
+
+func get_inventory_save_state() -> Dictionary:
+	return {
+		"schemaVersion": 2,
+		"columns": INVENTORY_COLUMNS,
+		"rowCount": SAVE_ROWS,
+		"hotbarRow": HOTBAR_SAVE_ROW,
+		"rowLabels": ["A", "B", "C", "D", "HOTBAR"],
+		"rows": _build_save_rows(),
+		"inventorySlots": _duplicate_string_array(inventory_slots),
+		"hotbarSlots": _duplicate_string_array(hotbar_slots),
+		"selectedSlot": selected_slot,
+		"selectedHeldSlot": selected_held_slot,
+		"selectedSlotKind": selected_slot_kind,
+	}
 
 
 func _select_slot_at_position(position: Vector2) -> bool:
@@ -908,7 +936,7 @@ func add_item_to_inventory(item_id: String, sync_save := true) -> bool:
 	_rebuild_legacy_items()
 	_refresh_all()
 	if sync_save and AuthManager != null and not AuthManager.is_applying_game_state():
-		AuthManager.request_local_game_state_save()
+		AuthManager.commit_local_game_state_immediate()
 	return true
 
 
@@ -927,6 +955,69 @@ func _apply_saved_slot_array(saved_value: Variant, target: Array[String], expect
 	for index in range(mini(saved_array.size(), expected_size)):
 		var item_id := str(saved_array[index])
 		target[index] = item_id if item_id == "" or item_catalog.has(item_id) else ""
+
+
+func _apply_saved_rows(saved_value: Variant) -> bool:
+	if typeof(saved_value) != TYPE_ARRAY:
+		return false
+
+	var saved_rows := saved_value as Array
+	if saved_rows.size() < SAVE_ROWS:
+		push_warning("Inventory save ignored: expected %d rows, got %d." % [SAVE_ROWS, saved_rows.size()])
+		return false
+
+	_reset_slots_to_empty()
+	for row_index in range(INVENTORY_ROWS):
+		var row_value: Variant = saved_rows[row_index]
+		if typeof(row_value) != TYPE_ARRAY:
+			push_warning("Inventory save row %d ignored: expected Array." % row_index)
+			continue
+		var row := row_value as Array
+		for column_index in range(mini(row.size(), INVENTORY_COLUMNS)):
+			var flat_index := (row_index * INVENTORY_COLUMNS) + column_index
+			inventory_slots[flat_index] = _sanitize_saved_item_id(row[column_index])
+
+	var hotbar_value: Variant = saved_rows[HOTBAR_SAVE_ROW]
+	if typeof(hotbar_value) != TYPE_ARRAY:
+		push_warning("Inventory save hotbar row ignored: expected Array.")
+		return true
+	var hotbar_row := hotbar_value as Array
+	for column_index in range(mini(hotbar_row.size(), HOTBAR_SLOTS)):
+		hotbar_slots[column_index] = _sanitize_saved_item_id(hotbar_row[column_index])
+	return true
+
+
+func _build_save_rows() -> Array:
+	var rows: Array = []
+	for row_index in range(INVENTORY_ROWS):
+		var row: Array = []
+		for column_index in range(INVENTORY_COLUMNS):
+			row.append(inventory_slots[(row_index * INVENTORY_COLUMNS) + column_index])
+		rows.append(row)
+	rows.append(_duplicate_string_array(hotbar_slots))
+	return rows
+
+
+func _duplicate_string_array(source: Array[String]) -> Array:
+	var duplicate: Array = []
+	for value in source:
+		duplicate.append(value)
+	return duplicate
+
+
+func _sanitize_saved_item_id(value: Variant) -> String:
+	var item_id := str(value)
+	if item_id == "" or item_catalog.has(item_id):
+		return item_id
+	push_warning("Inventory save contains unknown item id '%s'. Slot cleared." % item_id)
+	return ""
+
+
+func _reset_slots_to_empty() -> void:
+	for index in range(inventory_slots.size()):
+		inventory_slots[index] = ""
+	for index in range(hotbar_slots.size()):
+		hotbar_slots[index] = ""
 
 
 func _ensure_item_in_inventory(item_id: String) -> void:
@@ -1027,7 +1118,7 @@ func _move_slot_item(source_kind: String, source_index: int, target_kind: String
 	_rebuild_legacy_items()
 	_refresh_all()
 	if AuthManager != null and not AuthManager.is_applying_game_state():
-		AuthManager.request_local_game_state_save()
+		AuthManager.commit_local_game_state_immediate()
 
 
 func _find_slot_at_position(position: Vector2) -> Dictionary:

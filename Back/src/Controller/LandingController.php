@@ -190,6 +190,7 @@ final class LandingController extends AbstractController
         return new Response($contents, Response::HTTP_OK, [
             'Content-Type' => $this->guessMimeType($fullPath),
             'Cross-Origin-Resource-Policy' => 'same-origin',
+            'Permissions-Policy' => 'autoplay=(self), fullscreen=(self), gamepad=(self)',
             'Cache-Control' => 'no-cache',
         ]);
     }

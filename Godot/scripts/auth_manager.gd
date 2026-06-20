@@ -15,7 +15,7 @@ const SESSION_FILE_PATH := "user://auth_session.cfg"
 const SERVER_RECONNECT_CHECK_SECONDS := 8.0
 const REQUEST_TIMEOUT_SECONDS := 5.0
 const SAVE_DEBOUNCE_SECONDS := 1.5
-const SAVE_SCHEMA_VERSION := 1
+const SAVE_SCHEMA_VERSION := 2
 const DEFAULT_START_SCENE_PATH := "res://scenes/game.tscn"
 
 var email: String = ""
@@ -58,11 +58,12 @@ func _ready() -> void:
 	add_child(_save_debounce_timer)
 	_save_debounce_timer.timeout.connect(commit_local_game_state)
 	load_session()
+	_update_web_unload_save_payload()
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		commit_local_game_state()
+		commit_local_game_state(true)
 
 
 func is_logged_in() -> bool:
@@ -131,14 +132,15 @@ func save_session() -> void:
 	config.set_value("sync", "has_unsynced_local_game_data", _has_unsynced_local_game_data)
 	config.set_value("server", "custom_api_base_url", custom_api_base_url)
 	config.save(SESSION_FILE_PATH)
+	_update_web_unload_save_payload()
 
 
 func get_primary_api_base_url() -> String:
-	if custom_api_base_url != "":
-		return custom_api_base_url
 	var web_api_url := _get_web_api_base_url()
 	if web_api_url != "":
 		return web_api_url
+	if custom_api_base_url != "":
+		return custom_api_base_url
 	return DEFAULT_API_BASE_URLS[0]
 
 
@@ -158,10 +160,10 @@ func _get_api_base_urls() -> Array[String]:
 	if web_api_url != "":
 		urls.append(web_api_url)
 	if custom_api_base_url != "":
-		if not urls.has(custom_api_base_url):
+		if _is_api_base_url_allowed_for_current_context(custom_api_base_url) and not urls.has(custom_api_base_url):
 			urls.append(custom_api_base_url)
 	for url in DEFAULT_API_BASE_URLS:
-		if not urls.has(url):
+		if _is_api_base_url_allowed_for_current_context(url) and not urls.has(url):
 			urls.append(url)
 	return urls
 
@@ -174,6 +176,29 @@ func _get_web_api_base_url() -> String:
 	if origin == "":
 		return ""
 	return "%s/api" % origin
+
+
+func _is_api_base_url_allowed_for_current_context(url: String) -> bool:
+	if not OS.has_feature("web"):
+		return true
+
+	var normalized_url := url.strip_edges().to_lower()
+	if normalized_url == "":
+		return false
+
+	var origin_variant: Variant = JavaScriptBridge.eval("window.location.origin")
+	var origin := str(origin_variant).strip_edges().trim_suffix("/")
+	if origin == "":
+		return normalized_url.begins_with("https://")
+
+	var origin_lower := origin.to_lower()
+	if normalized_url.begins_with(origin_lower + "/"):
+		return true
+
+	if origin_lower.begins_with("https://"):
+		return normalized_url.begins_with("https://")
+
+	return true
 
 
 func _normalize_api_base_url(raw_url: String) -> String:
@@ -356,18 +381,28 @@ func apply_saved_player_state_to_current_scene() -> void:
 		))
 
 
-func commit_local_game_state() -> void:
+func commit_local_game_state(force_web_keepalive := false) -> void:
 	var game_data := _build_game_data_snapshot()
 	_set_profile_game_data(game_data)
 	if is_logged_in():
 		_mark_local_game_data_unsynced()
+		if force_web_keepalive:
+			_send_web_keepalive_save(game_data)
 		queue_profile_game_data_sync(game_data)
+
+
+func commit_local_game_state_immediate() -> void:
+	if _is_applying_game_state:
+		return
+	if _save_debounce_timer != null:
+		_save_debounce_timer.stop()
+	commit_local_game_state(true)
 
 
 func commit_scene_checkpoint() -> void:
 	if _is_applying_game_state:
 		return
-	commit_local_game_state()
+	commit_local_game_state(true)
 
 
 func request_local_game_state_save() -> void:
@@ -641,7 +676,7 @@ func _build_game_data_snapshot(bindings_snapshot: Dictionary = {}) -> Dictionary
 		if _pending_travel_scene_path != "" and captured_scene_path == _pending_travel_scene_path:
 			_pending_travel_scene_path = ""
 	game_data["settings"] = _capture_settings_state()
-	var captured_inventory := _capture_inventory_state()
+	var captured_inventory := _capture_inventory_state(game_data)
 	if _has_applied_game_state_once or not captured_inventory.is_empty() or not game_data.has("inventory"):
 		game_data["inventory"] = captured_inventory
 	game_data["progression"] = _capture_progression_state()
@@ -738,6 +773,7 @@ func _set_profile_game_data(game_data: Dictionary) -> void:
 	user_profile["gameData"] = game_data
 	save_session()
 	_write_offline_backup()
+	_update_web_unload_save_payload()
 
 
 func _build_fresh_game_data_snapshot() -> Dictionary:
@@ -760,7 +796,7 @@ func _build_fresh_game_data_snapshot() -> Dictionary:
 		},
 		"scenePlayerStates": {},
 		"settings": _capture_settings_state(),
-		"inventory": {},
+		"inventory": _build_default_inventory_state(),
 		"progression": {
 			"currentQuest": "starter",
 			"flags": {},
@@ -955,32 +991,121 @@ func _capture_settings_state() -> Dictionary:
 	}
 
 
-func _capture_inventory_state() -> Dictionary:
+func _capture_inventory_state(existing_game_data: Dictionary = {}) -> Dictionary:
 	var inventory_node := _find_inventory_node()
 	if inventory_node == null:
-		return {}
+		var existing_inventory: Variant = existing_game_data.get("inventory", {})
+		if typeof(existing_inventory) == TYPE_DICTIONARY:
+			return _normalize_inventory_state(existing_inventory as Dictionary)
+		return _build_default_inventory_state()
 
-	var item_names: Array = []
-	var inventory_items: Variant = inventory_node.get("items")
-	if typeof(inventory_items) == TYPE_ARRAY:
-		for item in inventory_items:
-			if typeof(item) == TYPE_DICTIONARY:
-				item_names.append(str((item as Dictionary).get("name", "")))
+	if inventory_node.has_method("get_inventory_save_state"):
+		var save_state: Variant = inventory_node.call("get_inventory_save_state")
+		if typeof(save_state) == TYPE_DICTIONARY:
+			return _normalize_inventory_state(save_state as Dictionary)
 
 	var selected_slot_value: Variant = inventory_node.get("selected_slot")
 	var selected_held_slot_value: Variant = inventory_node.get("selected_held_slot")
 	var selected_slot_kind_value: Variant = inventory_node.get("selected_slot_kind")
 	var inventory_slots_value: Variant = inventory_node.get("inventory_slots")
 	var hotbar_slots_value: Variant = inventory_node.get("hotbar_slots")
+	var legacy_inventory := _normalize_slot_array(inventory_slots_value, 16)
+	var legacy_hotbar := _normalize_slot_array(hotbar_slots_value, 4)
 
-	return {
+	return _normalize_inventory_state({
 		"selectedSlot": int(selected_slot_value) if selected_slot_value != null else 0,
 		"selectedHeldSlot": int(selected_held_slot_value) if selected_held_slot_value != null else 0,
 		"selectedSlotKind": str(selected_slot_kind_value) if selected_slot_kind_value != null else "hotbar",
-		"inventorySlots": inventory_slots_value if typeof(inventory_slots_value) == TYPE_ARRAY else [],
-		"hotbarSlots": hotbar_slots_value if typeof(hotbar_slots_value) == TYPE_ARRAY else [],
-		"items": item_names,
+		"inventorySlots": legacy_inventory,
+		"hotbarSlots": legacy_hotbar,
+	})
+
+
+func _build_default_inventory_state() -> Dictionary:
+	return _normalize_inventory_state({
+		"schemaVersion": 2,
+		"rows": [
+			["", "", "", ""],
+			["", "", "", ""],
+			["", "", "", ""],
+			["", "", "", ""],
+			["sword", "", "", ""],
+		],
+		"selectedSlot": 0,
+		"selectedHeldSlot": 0,
+		"selectedSlotKind": "hotbar",
+	})
+
+
+func _normalize_inventory_state(inventory_state: Dictionary) -> Dictionary:
+	var rows := _normalize_inventory_rows(inventory_state.get("rows", []), inventory_state)
+	var inventory_slots: Array = []
+	for row_index in range(4):
+		for column_index in range(4):
+			inventory_slots.append(str((rows[row_index] as Array)[column_index]))
+	var hotbar_slots := _normalize_slot_array(rows[4], 4)
+
+	var selected_slot_kind := str(inventory_state.get("selectedSlotKind", "hotbar"))
+	if selected_slot_kind != "inventory" and selected_slot_kind != "hotbar":
+		selected_slot_kind = "hotbar"
+
+	var selected_limit := 3 if selected_slot_kind == "hotbar" else 15
+	return {
+		"schemaVersion": 2,
+		"columns": 4,
+		"rowCount": 5,
+		"hotbarRow": 4,
+		"rowLabels": ["A", "B", "C", "D", "HOTBAR"],
+		"rows": rows,
+		"inventorySlots": inventory_slots,
+		"hotbarSlots": hotbar_slots,
+		"selectedSlot": clampi(int(inventory_state.get("selectedSlot", 0)), 0, selected_limit),
+		"selectedHeldSlot": clampi(int(inventory_state.get("selectedHeldSlot", 0)), 0, 3),
+		"selectedSlotKind": selected_slot_kind,
 	}
+
+
+func _normalize_inventory_rows(rows_value: Variant, inventory_state: Dictionary) -> Array:
+	if typeof(rows_value) == TYPE_ARRAY and (rows_value as Array).size() >= 5:
+		var source_rows := rows_value as Array
+		var normalized_rows: Array = []
+		for row_index in range(5):
+			normalized_rows.append(_normalize_slot_array(source_rows[row_index], 4))
+		return normalized_rows
+
+	var inventory_slots := _normalize_slot_array(inventory_state.get("inventorySlots", []), 16)
+	var hotbar_slots := _normalize_slot_array(inventory_state.get("hotbarSlots", []), 4)
+	if _slot_array_is_empty(hotbar_slots) and not inventory_slots.has("sword"):
+		hotbar_slots[0] = "sword"
+
+	var legacy_rows: Array = []
+	for row_index in range(4):
+		var row: Array = []
+		for column_index in range(4):
+			row.append(str(inventory_slots[(row_index * 4) + column_index]))
+		legacy_rows.append(row)
+	legacy_rows.append(hotbar_slots)
+	return legacy_rows
+
+
+func _normalize_slot_array(value: Variant, expected_size: int) -> Array:
+	var normalized: Array = []
+	for index in range(expected_size):
+		normalized.append("")
+	if typeof(value) != TYPE_ARRAY:
+		return normalized
+
+	var source := value as Array
+	for index in range(mini(source.size(), expected_size)):
+		normalized[index] = str(source[index])
+	return normalized
+
+
+func _slot_array_is_empty(values: Array) -> bool:
+	for value in values:
+		if str(value) != "":
+			return false
+	return true
 
 
 func _capture_progression_state() -> Dictionary:
@@ -1150,6 +1275,112 @@ func _clear_local_game_data_unsynced() -> void:
 	_has_unsynced_local_game_data = false
 	save_session()
 	_write_offline_backup()
+
+
+func _send_web_keepalive_save(game_data: Dictionary) -> void:
+	if not OS.has_feature("web") or token == "":
+		return
+	var api_base_url := get_primary_api_base_url()
+	if api_base_url == "":
+		return
+
+	var body := JSON.stringify({
+		"gameData": game_data,
+	})
+	var js := """
+	(function(apiBaseUrl, authToken, requestBody) {
+		try {
+			var baseUrl = String(apiBaseUrl || '');
+			if (baseUrl.endsWith('/')) {
+				baseUrl = baseUrl.slice(0, -1);
+			}
+			var url = baseUrl + '/save';
+			var body = String(requestBody || '');
+			if (!url || !authToken || !body) {
+				return false;
+			}
+			fetch(url, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + authToken
+				},
+				body: body,
+				keepalive: true,
+				credentials: 'same-origin'
+			}).catch(function() {});
+			window.__fantasyAdventurePendingSave = {
+				apiBaseUrl: apiBaseUrl,
+				authToken: authToken,
+				body: body
+			};
+			return true;
+		} catch (error) {
+			return false;
+		}
+	})(%s, %s, %s);
+	""" % [
+		JSON.stringify(api_base_url),
+		JSON.stringify(token),
+		JSON.stringify(body),
+	]
+	JavaScriptBridge.eval(js)
+
+
+func _update_web_unload_save_payload() -> void:
+	if not OS.has_feature("web") or token == "" or typeof(user_profile) != TYPE_DICTIONARY:
+		return
+	var game_data := _get_current_game_data()
+	if game_data.is_empty():
+		return
+
+	var body := JSON.stringify({
+		"gameData": game_data,
+	})
+	var js := """
+	(function(apiBaseUrl, authToken, requestBody) {
+		try {
+			window.__fantasyAdventurePendingSave = {
+				apiBaseUrl: apiBaseUrl,
+				authToken: authToken,
+				body: requestBody
+			};
+			if (!window.__fantasyAdventureBeforeUnloadSaveInstalled) {
+				window.__fantasyAdventureBeforeUnloadSaveInstalled = true;
+				window.addEventListener('beforeunload', function() {
+					try {
+						var pending = window.__fantasyAdventurePendingSave || {};
+						if (!pending.apiBaseUrl || !pending.authToken || !pending.body) {
+							return;
+						}
+						var baseUrl = String(pending.apiBaseUrl);
+						if (baseUrl.endsWith('/')) {
+							baseUrl = baseUrl.slice(0, -1);
+						}
+						fetch(baseUrl + '/save', {
+							method: 'PUT',
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': 'Bearer ' + pending.authToken
+							},
+							body: String(pending.body),
+							keepalive: true,
+							credentials: 'same-origin'
+						}).catch(function() {});
+					} catch (error) {}
+				});
+			}
+			return true;
+		} catch (error) {
+			return false;
+		}
+	})(%s, %s, %s);
+	""" % [
+		JSON.stringify(get_primary_api_base_url()),
+		JSON.stringify(token),
+		JSON.stringify(body),
+	]
+	JavaScriptBridge.eval(js)
 
 
 func _resolve_profile_after_remote_sync(remote_profile: Dictionary) -> Dictionary:

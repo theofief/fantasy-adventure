@@ -151,7 +151,10 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Le champ gameData (JSON objet/tableau) est requis.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        $user->setGameData($this->normalizeGameData($payload['gameData']));
+        /** @var array<string, mixed> $incomingGameData */
+        $incomingGameData = $payload['gameData'];
+        $incomingGameData = $this->preserveExistingInventoryWhenMissing($incomingGameData, $user->getGameData());
+        $user->setGameData($this->normalizeGameData($incomingGameData));
         $entityManager->flush();
 
         return $this->json(['message' => 'Sauvegarde mise a jour.', 'gameData' => $user->getGameData()]);
@@ -235,7 +238,130 @@ class AuthController extends AbstractController
         $saveMeta['serverUpdatedAtIso'] = $now->format(DateTimeInterface::ATOM);
         $saveMeta['schemaVersion'] = (int) ($saveMeta['schemaVersion'] ?? 1);
         $normalized['saveMeta'] = $saveMeta;
+        if (isset($normalized['inventory']) && is_array($normalized['inventory'])) {
+            $normalized['inventory'] = $this->normalizeInventoryState($normalized['inventory']);
+        }
 
         return $normalized;
+    }
+
+    /**
+     * @param array<string, mixed> $incomingGameData
+     * @param array<string, mixed> $existingGameData
+     *
+     * @return array<string, mixed>
+     */
+    private function preserveExistingInventoryWhenMissing(array $incomingGameData, array $existingGameData): array
+    {
+        $incomingInventory = $incomingGameData['inventory'] ?? null;
+        $existingInventory = $existingGameData['inventory'] ?? null;
+
+        if (
+            (!is_array($incomingInventory) || $incomingInventory === [])
+            && is_array($existingInventory)
+            && $existingInventory !== []
+        ) {
+            $incomingGameData['inventory'] = $existingInventory;
+        }
+
+        return $incomingGameData;
+    }
+
+    /**
+     * @param array<mixed> $inventory
+     *
+     * @return array<string, mixed>
+     */
+    private function normalizeInventoryState(array $inventory): array
+    {
+        $rows = $this->normalizeInventoryRows($inventory);
+        $inventorySlots = [];
+        for ($rowIndex = 0; $rowIndex < 4; $rowIndex++) {
+            for ($columnIndex = 0; $columnIndex < 4; $columnIndex++) {
+                $inventorySlots[] = (string) $rows[$rowIndex][$columnIndex];
+            }
+        }
+
+        $selectedSlotKind = (string) ($inventory['selectedSlotKind'] ?? 'hotbar');
+        if (!in_array($selectedSlotKind, ['inventory', 'hotbar'], true)) {
+            $selectedSlotKind = 'hotbar';
+        }
+
+        $selectedSlotLimit = $selectedSlotKind === 'hotbar' ? 3 : 15;
+
+        return [
+            'schemaVersion' => 2,
+            'columns' => 4,
+            'rowCount' => 5,
+            'hotbarRow' => 4,
+            'rowLabels' => ['A', 'B', 'C', 'D', 'HOTBAR'],
+            'rows' => $rows,
+            'inventorySlots' => $inventorySlots,
+            'hotbarSlots' => $rows[4],
+            'selectedSlot' => max(0, min((int) ($inventory['selectedSlot'] ?? 0), $selectedSlotLimit)),
+            'selectedHeldSlot' => max(0, min((int) ($inventory['selectedHeldSlot'] ?? 0), 3)),
+            'selectedSlotKind' => $selectedSlotKind,
+        ];
+    }
+
+    /**
+     * @param array<mixed> $inventory
+     *
+     * @return array<int, array<int, string>>
+     */
+    private function normalizeInventoryRows(array $inventory): array
+    {
+        $rawRows = $inventory['rows'] ?? null;
+        if (is_array($rawRows) && count($rawRows) >= 5) {
+            $rows = [];
+            for ($rowIndex = 0; $rowIndex < 5; $rowIndex++) {
+                $rows[] = $this->normalizeSlotArray(is_array($rawRows[$rowIndex] ?? null) ? $rawRows[$rowIndex] : [], 4);
+            }
+
+            return $rows;
+        }
+
+        $inventorySlots = $this->normalizeSlotArray(is_array($inventory['inventorySlots'] ?? null) ? $inventory['inventorySlots'] : [], 16);
+        $hotbarSlots = $this->normalizeSlotArray(is_array($inventory['hotbarSlots'] ?? null) ? $inventory['hotbarSlots'] : [], 4);
+        if ($this->slotArrayIsEmpty($hotbarSlots) && !in_array('sword', $inventorySlots, true)) {
+            $hotbarSlots[0] = 'sword';
+        }
+
+        return [
+            array_slice($inventorySlots, 0, 4),
+            array_slice($inventorySlots, 4, 4),
+            array_slice($inventorySlots, 8, 4),
+            array_slice($inventorySlots, 12, 4),
+            $hotbarSlots,
+        ];
+    }
+
+    /**
+     * @param array<mixed> $slots
+     *
+     * @return array<int, string>
+     */
+    private function normalizeSlotArray(array $slots, int $expectedSize): array
+    {
+        $normalized = array_fill(0, $expectedSize, '');
+        for ($index = 0; $index < min(count($slots), $expectedSize); $index++) {
+            $normalized[$index] = (string) $slots[$index];
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param array<int, string> $slots
+     */
+    private function slotArrayIsEmpty(array $slots): bool
+    {
+        foreach ($slots as $slot) {
+            if ($slot !== '') {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

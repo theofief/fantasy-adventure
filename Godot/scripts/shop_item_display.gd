@@ -458,7 +458,7 @@ func _confirm_purchase() -> void:
 		return
 	GlobalCoins.remove_coin(price)
 	if AuthManager != null and not AuthManager.is_applying_game_state():
-		AuthManager.commit_local_game_state()
+		AuthManager.commit_local_game_state_immediate()
 	_close_purchase_popup()
 
 
