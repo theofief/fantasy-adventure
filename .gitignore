@@ -1,4 +1,25 @@
-# Godot 4+ specific ignores
-# .godot/
-# /android/
 .DS_Store
+
+# IDE / editor state
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Godot generated files
+Godot/.godot/
+Godot/.import/
+Godot/android/
+
+# Symfony / server generated files
+Back/var/cache/
+Back/var/log/
+Back/var/sessions/
+Back/var/tmp/
+Back/var/prod-certs/
+Back/var/dev-certs/
+Back/var/.back-*-setup-complete
+
+# Local environment overrides
+Back/.env.local
+Back/.env.*.local

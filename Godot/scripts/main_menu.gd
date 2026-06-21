@@ -4,7 +4,11 @@ extends Control
 
 const SETTINGS_MENU_SCENE := preload("res://scenes/settings_menu.tscn")
 const MINI_GAMES_SCENE := "res://scenes/mini_games_menu.tscn"
+const BACKGROUND_PARALLAX_MARGIN := 48.0
+const BACKGROUND_PARALLAX_STRENGTH := 22.0
+const BACKGROUND_PARALLAX_SMOOTHNESS := 7.0
 
+@onready var Background: TextureRect = $Background
 @onready var PlaySoloButton = $MarginContainer/HBoxContainer/VBoxContainer/PlaySoloButton
 @onready var PlayMiniGamesButton = $MarginContainer/HBoxContainer/VBoxContainer/PlayMiniGamesButton
 @onready var SettingsButton = $MarginContainer/HBoxContainer/VBoxContainer/SettingsButton
@@ -17,12 +21,16 @@ const MINI_GAMES_SCENE := "res://scenes/mini_games_menu.tscn"
 @onready var TitleLabel = $MarginContainer/VBoxContainer/Label
 
 var settings_overlay: SettingsMenu
+var _background_base_position := Vector2.ZERO
+var _background_target_offset := Vector2.ZERO
 
 
 func _ready():
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	get_tree().paused = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	get_viewport().size_changed.connect(_resize_background)
+	_resize_background()
 	if UIManager != null:
 		UIManager.menu_open = false
 		UIManager.current_menu = ""
@@ -50,6 +58,43 @@ func _ready():
 			OfflineModeLabel.text = old_text
 			OfflineModeLabel.visible = AuthManager.is_offline_session()
 	
+
+func _process(delta: float) -> void:
+	_update_background_parallax(delta)
+
+
+func _resize_background() -> void:
+	if Background == null or Background.texture == null:
+		return
+
+	var viewport_size := get_viewport_rect().size
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return
+
+	var texture_size := Background.texture.get_size()
+	var target_size := viewport_size + Vector2.ONE * BACKGROUND_PARALLAX_MARGIN * 2.0
+	var scale_factor := maxf(target_size.x / texture_size.x, target_size.y / texture_size.y)
+	var background_size := texture_size * scale_factor
+
+	Background.custom_minimum_size = background_size
+	Background.size = background_size
+	_background_base_position = (viewport_size - background_size) * 0.5
+	Background.position = _background_base_position + _background_target_offset
+
+
+func _update_background_parallax(delta: float) -> void:
+	if Background == null:
+		return
+
+	var viewport_size := get_viewport_rect().size
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return
+
+	var mouse_position := get_viewport().get_mouse_position()
+	var normalized := (mouse_position / viewport_size) - Vector2(0.5, 0.5)
+	_background_target_offset = -normalized * BACKGROUND_PARALLAX_STRENGTH
+	Background.position = Background.position.lerp(_background_base_position + _background_target_offset, delta * BACKGROUND_PARALLAX_SMOOTHNESS)
+
 
 func update_greeting() -> void:
 	var pseudo := "aventurier"

@@ -1,11 +1,11 @@
 extends CanvasLayer
 
-const JOYSTICK_SIZE := 132.0
-const KNOB_SIZE := 54.0
+const JOYSTICK_SIZE := 146.0
+const KNOB_SIZE := 60.0
 const JOYSTICK_MARGIN := Vector2(28, 30)
-const BUTTON_SIZE := Vector2(84, 62)
-const TOP_BUTTON_SIZE := Vector2(58, 46)
-const BAG_BUTTON_SIZE := Vector2(52, 52)
+const BUTTON_SIZE := Vector2(94, 70)
+const TOP_BUTTON_SIZE := Vector2(66, 52)
+const BAG_BUTTON_SIZE := Vector2(60, 60)
 const HUD_HOTBAR_WIDTH := 238.0
 const HUD_HOTBAR_BOTTOM_MARGIN := 24.0
 const DEADZONE := 0.22
@@ -144,9 +144,9 @@ func _build_buttons() -> void:
 	_button_root.anchor_right = 1.0
 	_button_root.anchor_top = 1.0
 	_button_root.anchor_bottom = 1.0
-	_button_root.offset_left = -194.0
+	_button_root.offset_left = -214.0
 	_button_root.offset_right = -14.0
-	_button_root.offset_top = -176.0
+	_button_root.offset_top = -190.0
 	_button_root.offset_bottom = -36.0
 	_root.add_child(_button_root)
 
@@ -175,10 +175,10 @@ func _build_top_buttons() -> void:
 	_top_button_root.anchor_right = 0.5
 	_top_button_root.anchor_top = 0.0
 	_top_button_root.anchor_bottom = 0.0
-	_top_button_root.offset_left = -34.0
-	_top_button_root.offset_right = 96.0
+	_top_button_root.offset_left = -42.0
+	_top_button_root.offset_right = 102.0
 	_top_button_root.offset_top = 18.0
-	_top_button_root.offset_bottom = 64.0
+	_top_button_root.offset_bottom = 70.0
 	_root.add_child(_top_button_root)
 
 	var row := HBoxContainer.new()
@@ -189,7 +189,7 @@ func _build_top_buttons() -> void:
 
 	row.add_child(_make_action_button("II", "esc", TOP_BUTTON_SIZE, 18))
 	if show_map_button:
-		row.add_child(_make_action_button("MAP", "ui_toggle_map", TOP_BUTTON_SIZE, 14))
+		row.add_child(_make_action_button("MAP", "ui_toggle_map", TOP_BUTTON_SIZE, 15))
 
 
 func _build_bag_button() -> void:
@@ -207,7 +207,7 @@ func _build_bag_button() -> void:
 	_root.add_child(_bag_button_root)
 
 	if show_bag_button:
-		_bag_button_root.add_child(_make_action_button("BAG", "ui_inventory", BAG_BUTTON_SIZE, 13, true))
+		_bag_button_root.add_child(_make_action_button("BAG", "ui_inventory", BAG_BUTTON_SIZE, 14, true))
 	else:
 		_bag_button_root.visible = false
 

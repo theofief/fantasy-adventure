@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dqdbpn6sbjjsp" path="res://scripts/main_menu.gd" id="1_bqqt6"]
 [ext_resource type="FontFile" uid="uid://crft7xjpq21ha" path="res://assets/fonts/PixelOperator8.ttf" id="1_ekxnf"]
-[ext_resource type="Texture2D" uid="uid://bogehssspeh3m" path="res://assets/tiles/Capture d’écran 2026-06-19 114726.png" id="2_8ln24"]
+[ext_resource type="Texture2D" uid="uid://cq5cv0su48yq" path="res://assets/sprites/background-image.png" id="2_8ln24"]
 [ext_resource type="FontFile" uid="uid://dj0giqk7mfwmq" path="res://assets/fonts/PixelOperator8-Bold.ttf" id="2_bqqt6"]
 [ext_resource type="PackedScene" path="res://scenes/language_selector.tscn" id="3_lang"]
 
@@ -16,19 +16,13 @@ grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("1_bqqt6")
 
-[node name="CaptureD’écran20260619114726" type="Sprite2D" parent="." unique_id=1384503536]
-position = Vector2(576.75, 324)
-scale = Vector2(1.2111111, 1.2578125)
-texture = ExtResource("2_8ln24")
-
-[node name="TextureRect" type="TextureRect" parent="." unique_id=1115305886]
+[node name="Background" type="TextureRect" parent="." unique_id=1115305886]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
 mouse_filter = 2
+texture = ExtResource("2_8ln24")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=486695304]
 layout_mode = 1

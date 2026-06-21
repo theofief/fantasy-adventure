@@ -47,9 +47,11 @@ var _locale: String = TranslationServer.get_locale()
 var dialogue_line: DialogueLine:
 	set(value):
 		if value:
+			_stop_speak_sound()
 			dialogue_line = value
 			apply_dialogue_line()
 		else:
+			_stop_speak_sound()
 			# The dialogue has finished so close the balloon
 			if owner == null:
 				queue_free()
@@ -92,6 +94,12 @@ func _ready() -> void:
 		if not is_instance_valid(dialogue_resource):
 			assert(false, DMConstants.get_error_message(DMConstants.ERR_MISSING_RESOURCE_FOR_AUTOSTART))
 		start()
+
+
+func _exit_tree() -> void:
+	_stop_speak_sound()
+	if audio_stream_player != null:
+		audio_stream_player.stop()
 
 
 func _process(delta: float) -> void:
@@ -152,9 +160,13 @@ func apply_dialogue_line() -> void:
 	dialogue_label.show()
 	if not dialogue_line.text.is_empty():
 		if AudioManager != null:
-			AudioManager.play_speak()
+			if AudioManager.has_method(\"start_speak\"):
+				AudioManager.start_speak()
+			else:
+				AudioManager.play_speak()
 		dialogue_label.type_out()
 		await dialogue_label.finished_typing
+		_stop_speak_sound()
 
 	# Wait for next line
 	if dialogue_line.has_tag(\"voice\"):
@@ -177,7 +189,13 @@ func apply_dialogue_line() -> void:
 
 ## Go to the next line
 func next(next_id: String) -> void:
+	_stop_speak_sound()
 	dialogue_line = await dialogue_resource.get_next_dialogue_line(next_id, temporary_game_states)
+
+
+func _stop_speak_sound() -> void:
+	if AudioManager != null and AudioManager.has_method(\"stop_speak\"):
+		AudioManager.stop_speak()
 
 
 #region Signals

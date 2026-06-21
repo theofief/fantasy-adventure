@@ -16,8 +16,10 @@ const SFX_BUS := "SFX"
 var _walk_requested := false
 var _walk_cooldown := 0.0
 var _music_player: AudioStreamPlayer
+var _speak_player: AudioStreamPlayer
 var _current_music: AudioStream
 var _music_check_left := 0.0
+var _speak_requested := false
 
 
 func _ready() -> void:
@@ -30,6 +32,14 @@ func _ready() -> void:
 	_music_player.volume_db = MUSIC_VOLUME_DB
 	_music_player.finished.connect(_on_music_finished)
 	add_child(_music_player)
+
+	_speak_player = AudioStreamPlayer.new()
+	_speak_player.name = "SpeakPlayer"
+	_speak_player.stream = SPEAK_SOUND
+	_speak_player.bus = SFX_BUS
+	_speak_player.finished.connect(_on_speak_finished)
+	add_child(_speak_player)
+
 	if SettingsManager != null and SettingsManager.has_signal("audio_settings_changed"):
 		SettingsManager.audio_settings_changed.connect(_apply_audio_settings)
 	_apply_audio_settings()
@@ -50,7 +60,21 @@ func _process(delta: float) -> void:
 
 
 func play_speak() -> void:
-	_play_one_shot(SPEAK_SOUND)
+	start_speak()
+
+
+func start_speak() -> void:
+	if _speak_player == null:
+		return
+	_speak_requested = true
+	if not _speak_player.playing:
+		_speak_player.play()
+
+
+func stop_speak() -> void:
+	_speak_requested = false
+	if _speak_player != null:
+		_speak_player.stop()
 
 
 func play_attack() -> void:
@@ -124,6 +148,12 @@ func _on_music_finished() -> void:
 	if _current_music == null or _music_player == null:
 		return
 	_music_player.play()
+
+
+func _on_speak_finished() -> void:
+	if not _speak_requested or _speak_player == null:
+		return
+	_speak_player.play()
 
 
 func _play_one_shot(stream: AudioStream, volume_db := 0.0) -> void:
