@@ -37,6 +37,9 @@
 [ext_resource type="Texture2D" uid="uid://cma00djeidwoa" path="res://assets/tiles/Player/Tools/Bow/Wooden_Bow.png" id="35_bow"]
 [ext_resource type="Texture2D" uid="uid://c4ok66opjp5by" path="res://assets/tiles/Player/Tools/Fishing_Rod/Wooden_Fishing_Rod.png" id="36_rod"]
 [ext_resource type="Texture2D" uid="uid://dsnrb5fmu06dy" path="res://assets/tiles/Player/Tools/Iron/Iron_Tools.png" id="37_tools"]
+[ext_resource type="PackedScene" uid="uid://b87dn0ljdei1f" path="res://scenes/NPCs/start_npc.tscn" id="38_vuuy0"]
+[ext_resource type="Script" uid="uid://bfavmn8krcw0n" path="res://scripts/start_npc.gd" id="39_a3l88"]
+[ext_resource type="Resource" uid="uid://c7tik0s14nju0" path="res://dialogues/starter.dialogue" id="40_iuq7b"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_3sads"]
 texture = ExtResource("1_amgpj")
@@ -3154,6 +3157,9 @@ size = Vector2(22, 22)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kjvph"]
 size = Vector2(150, 110)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2lpl6"]
+size = Vector2(66, 33)
+
 [node name="HubScene" type="Node2D" unique_id=845659713]
 script = ExtResource("1_bn4qx")
 
@@ -3300,6 +3306,26 @@ offset_left = -34.0
 offset_top = -46.0
 offset_right = 38.0
 offset_bottom = -23.0
+theme_override_fonts/font = ExtResource("29_atxqg")
+text = "Press \"E\""
+
+[node name="StartNPC" parent="." unique_id=1217375317 instance=ExtResource("38_vuuy0")]
+position = Vector2(166, 95)
+
+[node name="Area2D" type="Area2D" parent="StartNPC" unique_id=912517654]
+script = ExtResource("39_a3l88")
+dialogue_resource = ExtResource("40_iuq7b")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StartNPC/Area2D" unique_id=723587758]
+position = Vector2(0, -8)
+shape = SubResource("RectangleShape2D_2lpl6")
+
+[node name="Label" type="Label" parent="StartNPC/Area2D" unique_id=862150568]
+y_sort_enabled = true
+offset_left = -34.0
+offset_top = -42.0
+offset_right = 35.0
+offset_bottom = -19.0
 theme_override_fonts/font = ExtResource("29_atxqg")
 text = "Press \"E\""
 
