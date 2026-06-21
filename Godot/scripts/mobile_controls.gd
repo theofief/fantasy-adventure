@@ -11,7 +11,7 @@ const HUD_HOTBAR_BOTTOM_MARGIN := 24.0
 const DEADZONE := 0.22
 const GAMEPLAY_LAYER := 130
 const MENU_LAYER := 95
-const MENU_TOUCH_GUARD_MS := 350
+const MENU_TOUCH_GUARD_MS := 2500
 
 const MOVE_ACTIONS := {
 	"left": ["ui_move_left", "ui_left"],
@@ -283,7 +283,10 @@ func _handle_action_touch(event: InputEventScreenTouch) -> bool:
 	if not _active_button_pointers.has(pointer_key):
 		return false
 
-	_emit_action_release(str(_active_button_pointers[pointer_key]))
+	var released_action := str(_active_button_pointers[pointer_key])
+	if released_action == "ui_inventory" or released_action == "esc":
+		_guard_menu_touch()
+	_emit_action_release(released_action)
 	_active_button_pointers.erase(pointer_key)
 	get_viewport().set_input_as_handled()
 	return true
@@ -306,7 +309,10 @@ func _handle_action_mouse_button(event: InputEventMouseButton) -> bool:
 	if not _active_button_pointers.has(POINTER_KEY):
 		return false
 
-	_emit_action_release(str(_active_button_pointers[POINTER_KEY]))
+	var released_action := str(_active_button_pointers[POINTER_KEY])
+	if released_action == "ui_inventory" or released_action == "esc":
+		_guard_menu_touch()
+	_emit_action_release(released_action)
 	_active_button_pointers.erase(POINTER_KEY)
 	get_viewport().set_input_as_handled()
 	return true

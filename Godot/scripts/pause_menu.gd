@@ -43,7 +43,7 @@ func pause():
 	
 	UIManager.menu_open = true
 	UIManager.current_menu = "pause"
-	UIManager.suppress_menu_close_until_msec = Time.get_ticks_msec() + 350
+	UIManager.suppress_menu_close_until_msec = Time.get_ticks_msec() + 2500
 	
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	get_tree().paused = true

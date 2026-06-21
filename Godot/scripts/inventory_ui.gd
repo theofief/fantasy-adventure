@@ -335,6 +335,7 @@ func _open_inventory() -> void:
 	if UIManager != null:
 		UIManager.menu_open = true
 		UIManager.current_menu = "inventory"
+		UIManager.suppress_menu_close_until_msec = Time.get_ticks_msec() + 2500
 	get_tree().paused = true
 	if _blur_material != null:
 		_blur_material.set_shader_parameter("lod", 0.861)
