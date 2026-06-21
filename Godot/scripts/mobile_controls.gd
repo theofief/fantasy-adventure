@@ -11,6 +11,7 @@ const HUD_HOTBAR_BOTTOM_MARGIN := 24.0
 const DEADZONE := 0.22
 const GAMEPLAY_LAYER := 130
 const MENU_LAYER := 95
+const MENU_TOUCH_GUARD_MS := 350
 
 const MOVE_ACTIONS := {
 	"left": ["ui_move_left", "ui_left"],
@@ -245,7 +246,6 @@ func _make_action_button(label: String, action: String, minimum_size: Vector2, f
 	button.add_theme_stylebox_override("normal", _button_style(fill, border, 2))
 	button.add_theme_stylebox_override("hover", _button_style(hover_fill, Color(1, 1, 1, 0.58), 2))
 	button.add_theme_stylebox_override("pressed", _button_style(Color(0.72, 0.81, 0.23, 0.82), Color(1, 1, 1, 0.8), 2))
-	button.gui_input.connect(_on_action_button_gui_input.bind(action))
 	_action_buttons.append({"button": button, "action": action})
 	return button
 
@@ -416,7 +416,10 @@ func _emit_action_press(action_name: String) -> void:
 	if not InputMap.has_action(action_name):
 		return
 	if action_name == "ui_inventory" and _toggle_inventory_directly():
+		_guard_menu_touch()
 		return
+	if action_name == "esc":
+		_guard_menu_touch()
 	Input.action_press(action_name, 1.0)
 	var event := InputEventAction.new()
 	event.action = action_name
@@ -459,11 +462,22 @@ func _toggle_inventory_directly() -> bool:
 		return false
 
 	var inventory_ui := scene.find_child("InventoryUI", true, false)
-	if inventory_ui == null or not inventory_ui.has_method("_toggle_inventory"):
+	if inventory_ui == null:
 		return false
 
-	inventory_ui.call("_toggle_inventory")
+	if inventory_ui.has_method("open_from_mobile_button"):
+		inventory_ui.call("open_from_mobile_button")
+	elif inventory_ui.has_method("_toggle_inventory"):
+		inventory_ui.call("_toggle_inventory")
+	else:
+		return false
 	return true
+
+
+func _guard_menu_touch() -> void:
+	if UIManager == null:
+		return
+	UIManager.suppress_menu_close_until_msec = Time.get_ticks_msec() + MENU_TOUCH_GUARD_MS
 
 
 func _should_show_controls() -> bool:

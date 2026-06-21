@@ -10,7 +10,7 @@ const INVENTORY_ROWS := 4
 const SAVE_ROWS := INVENTORY_ROWS + 1
 const HOTBAR_SAVE_ROW := SAVE_ROWS - 1
 const TOTAL_INVENTORY_SLOTS := INVENTORY_COLUMNS * INVENTORY_ROWS
-const INVENTORY_LAYER := 120
+const INVENTORY_LAYER := 110
 const SLOT_KIND_INVENTORY := "inventory"
 const SLOT_KIND_HOTBAR := "hotbar"
 const HOTBAR_ACTIONS := ["ui_hotbar_1", "ui_hotbar_2", "ui_hotbar_3", "ui_hotbar_4"]
@@ -147,6 +147,8 @@ func _handle_inventory_pointer_event(event: InputEvent) -> bool:
 			if _begin_slot_interaction_at_position(mouse_event.position):
 				return true
 			if _is_pointer_outside_inventory(mouse_event.position):
+				if _is_menu_close_guarded():
+					return true
 				_close_inventory(true)
 				return true
 		else:
@@ -162,6 +164,8 @@ func _handle_inventory_pointer_event(event: InputEvent) -> bool:
 			if _begin_slot_interaction_at_position(touch_event.position):
 				return true
 			if _is_pointer_outside_inventory(touch_event.position):
+				if _is_menu_close_guarded():
+					return true
 				_close_inventory(true)
 				return true
 		else:
@@ -178,6 +182,15 @@ func _handle_inventory_pointer_event(event: InputEvent) -> bool:
 func _toggle_inventory() -> void:
 	if _inventory_layer.visible:
 		_close_inventory()
+	else:
+		_open_inventory()
+
+
+func open_from_mobile_button() -> void:
+	if _inventory_layer == null:
+		return
+	if _inventory_layer.visible:
+		_close_inventory(true)
 	else:
 		_open_inventory()
 
@@ -482,6 +495,10 @@ func _is_pointer_outside_inventory(position: Vector2) -> bool:
 	if _inventory_panel == null:
 		return false
 	return not _inventory_panel.get_global_rect().has_point(position)
+
+
+func _is_menu_close_guarded() -> bool:
+	return UIManager != null and Time.get_ticks_msec() < int(UIManager.suppress_menu_close_until_msec)
 
 
 func _build_middle_content() -> Control:

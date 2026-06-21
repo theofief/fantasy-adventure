@@ -66,6 +66,7 @@ var _vsync_check: CheckBox
 var _fps_option: OptionButton
 var _graphics_labels: Dictionary = {}
 var _misc_section: VBoxContainer
+var _language_selector: Control
 var _current_section := SECTION_AUDIO
 var _selected_tab_style: StyleBoxFlat
 
@@ -240,8 +241,40 @@ func _build_section_ui() -> void:
 	_misc_section.add_theme_constant_override("separation", 14)
 	settings_content.add_child(_misc_section)
 	settings_content.move_child(_misc_section, 4)
+	_move_language_selector_to_misc_section()
 	settings_content.remove_child(auto_reconnect_container)
 	_misc_section.add_child(auto_reconnect_container)
+
+
+func _move_language_selector_to_misc_section() -> void:
+	_language_selector = get_node_or_null("LanguageSelector") as Control
+	if _language_selector == null:
+		return
+
+	var row := HBoxContainer.new()
+	row.name = "LanguageContainer"
+	row.add_theme_constant_override("separation", 12)
+	_misc_section.add_child(row)
+
+	var label := Label.new()
+	label.name = "LanguageLabel"
+	label.custom_minimum_size = Vector2(360, 36)
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.add_theme_font_override("font", FONT_BOLD)
+	label.add_theme_font_size_override("font_size", 18)
+	label.text = tr("Langue")
+	row.add_child(label)
+
+	remove_child(_language_selector)
+	row.add_child(_language_selector)
+	_language_selector.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_language_selector.offset_left = 0.0
+	_language_selector.offset_top = 0.0
+	_language_selector.offset_right = 54.0
+	_language_selector.offset_bottom = 36.0
+	_language_selector.custom_minimum_size = Vector2(54, 36)
+	_language_selector.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_language_selector.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 
 func _add_section_button(parent: HBoxContainer, section_name: String, label_text: String) -> void:
@@ -555,6 +588,9 @@ func _refresh_translated_ui() -> void:
 		(_section_buttons[SECTION_GRAPHICS] as Button).text = tr("Graphismes")
 	if _section_buttons.has(SECTION_MISC):
 		(_section_buttons[SECTION_MISC] as Button).text = tr("Divers")
+	var language_label := find_child("LanguageLabel", true, false) as Label
+	if language_label != null:
+		language_label.text = tr("Langue")
 	_refresh_audio_labels()
 	_refresh_graphics_labels()
 

@@ -43,6 +43,7 @@ func pause():
 	
 	UIManager.menu_open = true
 	UIManager.current_menu = "pause"
+	UIManager.suppress_menu_close_until_msec = Time.get_ticks_msec() + 350
 	
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	get_tree().paused = true
@@ -75,11 +76,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_event := event as InputEventMouseButton
 		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT and _is_pointer_outside_pause_content(mouse_event.position):
+			if _is_menu_close_guarded():
+				get_viewport().set_input_as_handled()
+				return
 			resume()
 			get_viewport().set_input_as_handled()
 	elif event is InputEventScreenTouch:
 		var touch_event := event as InputEventScreenTouch
 		if touch_event.pressed and _is_pointer_outside_pause_content(touch_event.position):
+			if _is_menu_close_guarded():
+				get_viewport().set_input_as_handled()
+				return
 			resume()
 			get_viewport().set_input_as_handled()
 
@@ -140,6 +147,10 @@ func _is_pointer_outside_pause_content(position: Vector2) -> bool:
 	if menu_content != null and menu_content.get_global_rect().has_point(position):
 		return false
 	return true
+
+
+func _is_menu_close_guarded() -> bool:
+	return UIManager != null and Time.get_ticks_msec() < int(UIManager.suppress_menu_close_until_msec)
 
 
 func _is_pause_toggle_event(event: InputEvent) -> bool:
