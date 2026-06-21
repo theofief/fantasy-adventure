@@ -189,9 +189,7 @@ func _toggle_inventory() -> void:
 func open_from_mobile_button() -> void:
 	if _inventory_layer == null:
 		return
-	if _inventory_layer.visible:
-		_close_inventory(true)
-	else:
+	if not _inventory_layer.visible:
 		_open_inventory()
 
 

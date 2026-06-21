@@ -50,6 +50,14 @@ func pause():
 	_set_pause_controls_interactive(true)
 	$AnimationPlayer.play("blur")
 
+
+func open_from_mobile_button() -> void:
+	if UIManager != null and UIManager.menu_open:
+		return
+	if get_tree().paused:
+		return
+	pause()
+
 func _process(_delta):
 	if UIManager.suppress_pause_once:
 		UIManager.suppress_pause_once = false

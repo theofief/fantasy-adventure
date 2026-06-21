@@ -12,6 +12,7 @@ const DEADZONE := 0.22
 const GAMEPLAY_LAYER := 130
 const MENU_LAYER := 95
 const MENU_TOUCH_GUARD_MS := 2500
+const MENU_BUTTON_ACTIONS := ["esc", "ui_toggle_map", "ui_inventory"]
 
 const MOVE_ACTIONS := {
 	"left": ["ui_move_left", "ui_left"],
@@ -66,9 +67,9 @@ func _process(_delta: float) -> void:
 	if UIManager != null:
 		menu_name = UIManager.current_menu
 	layer = GAMEPLAY_LAYER if menu_name == "" else MENU_LAYER
-	var gameplay_visible := menu_name == "" or menu_name == "map" or menu_name == "inventory"
-	_joystick_base.visible = gameplay_visible and menu_name == ""
-	_button_root.visible = gameplay_visible and menu_name == ""
+	var gameplay_visible := menu_name == ""
+	_joystick_base.visible = gameplay_visible
+	_button_root.visible = gameplay_visible
 	_top_button_root.visible = gameplay_visible
 	_bag_button_root.visible = gameplay_visible and menu_name == ""
 	if not gameplay_visible:
@@ -246,7 +247,10 @@ func _make_action_button(label: String, action: String, minimum_size: Vector2, f
 	button.add_theme_stylebox_override("normal", _button_style(fill, border, 2))
 	button.add_theme_stylebox_override("hover", _button_style(hover_fill, Color(1, 1, 1, 0.58), 2))
 	button.add_theme_stylebox_override("pressed", _button_style(Color(0.72, 0.81, 0.23, 0.82), Color(1, 1, 1, 0.8), 2))
-	_action_buttons.append({"button": button, "action": action})
+	if MENU_BUTTON_ACTIONS.has(action):
+		button.pressed.connect(_on_menu_button_pressed.bind(action))
+	else:
+		_action_buttons.append({"button": button, "action": action})
 	return button
 
 
@@ -325,9 +329,6 @@ func _get_action_at_position(position: Vector2) -> String:
 			continue
 		if button.get_global_rect().has_point(position):
 			return str(entry.get("action", ""))
-	if _bag_button_root != null and _bag_button_root.visible and _bag_button_root.is_visible_in_tree():
-		if _bag_button_root.get_global_rect().has_point(position):
-			return "ui_inventory"
 	return ""
 
 
@@ -421,11 +422,6 @@ func _release_action(action_name: String) -> void:
 func _emit_action_press(action_name: String) -> void:
 	if not InputMap.has_action(action_name):
 		return
-	if action_name == "ui_inventory" and _toggle_inventory_directly():
-		_guard_menu_touch()
-		return
-	if action_name == "esc":
-		_guard_menu_touch()
 	Input.action_press(action_name, 1.0)
 	var event := InputEventAction.new()
 	event.action = action_name
@@ -478,6 +474,54 @@ func _toggle_inventory_directly() -> bool:
 	else:
 		return false
 	return true
+
+
+func _on_menu_button_pressed(action_name: String) -> void:
+	_guard_menu_touch()
+	match action_name:
+		"esc":
+			_open_pause_directly()
+		"ui_toggle_map":
+			_toggle_map_directly()
+		"ui_inventory":
+			_open_inventory_directly()
+
+
+func _open_inventory_directly() -> void:
+	if UIManager != null and UIManager.menu_open:
+		return
+	_toggle_inventory_directly()
+
+
+func _open_pause_directly() -> void:
+	if UIManager != null and UIManager.menu_open:
+		return
+
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+
+	var pause_menu := scene.find_child("PauseMenu", true, false)
+	if pause_menu == null:
+		return
+
+	if pause_menu.has_method("open_from_mobile_button"):
+		pause_menu.call("open_from_mobile_button")
+	elif pause_menu.has_method("pause"):
+		pause_menu.call("pause")
+
+
+func _toggle_map_directly() -> void:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+
+	var map_layer := scene.find_child("MapLayer", true, false)
+	if map_layer == null:
+		return
+
+	if map_layer.has_method("toggle_map"):
+		map_layer.call("toggle_map")
 
 
 func _guard_menu_touch() -> void:
